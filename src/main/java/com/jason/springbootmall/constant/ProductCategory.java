@@ -7,5 +7,6 @@ public enum ProductCategory {
     ETF,
     SAVING,
     INSURANCE,
-    FOOD
+    FOOD,
+    CAR
 }
