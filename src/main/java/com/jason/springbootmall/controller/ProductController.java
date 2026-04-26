@@ -1,5 +1,6 @@
 package com.jason.springbootmall.controller;
 
+import com.jason.springbootmall.constant.ProductCategory;
 import com.jason.springbootmall.dto.ProductRequest;
 import com.jason.springbootmall.model.Product;
 import com.jason.springbootmall.service.ProductService;
@@ -9,11 +10,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 public class ProductController {
 
     @Autowired
     private ProductService productService;
+
+    @GetMapping("/products")
+    public ResponseEntity<List<Product>> getProducts(
+            @RequestParam(required = false) ProductCategory category,
+            @RequestParam(required = false) String search
+    ) {
+        List<Product> productList = productService.getProducts(category,search );
+
+        return ResponseEntity.status(HttpStatus.OK).body(productList);
+    }
 
     @GetMapping("/products/{productId}")
     public ResponseEntity<Product> getProduct(@PathVariable Integer productId){
@@ -61,7 +74,7 @@ public class ProductController {
          */
         //刪除商品的數據
         productService.deleteProductById(productId);
-        
+
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
