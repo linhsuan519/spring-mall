@@ -5,6 +5,7 @@ import com.jason.springbootmall.dto.ProductQueryParams;
 import com.jason.springbootmall.dto.ProductRequest;
 import com.jason.springbootmall.model.Product;
 import com.jason.springbootmall.service.ProductService;
+import com.jason.springbootmall.util.Page;
 import jakarta.validation.Valid;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class ProductController {
   @Autowired private ProductService productService;
 
   @GetMapping("/products")
-  public ResponseEntity<List<Product>> getProducts(
+  public ResponseEntity<Page<Product>> getProducts(
       //Filtering
       @RequestParam(required = false) ProductCategory category,
       @RequestParam(required = false) String search,
@@ -40,10 +41,18 @@ public class ProductController {
     productQueryParams.setSort(sort);
     productQueryParams.setLimit(limit);
     productQueryParams.setOffset(offset);
-
+    //取得 product list
     List<Product> productList = productService.getProducts(productQueryParams);
+    //取得總數
+    Integer total = productService.countProduct(productQueryParams);
+    //分頁
+    Page<Product> page = new Page<>();
+    page.setLimit(limit);
+    page.setOffset(offset);
+    page.setTotal(total);
+    page.setResults(productList);
 
-    return ResponseEntity.status(HttpStatus.OK).body(productList);
+    return ResponseEntity.status(HttpStatus.OK).body(page);
   }
 
   @GetMapping("/products/{productId}")
