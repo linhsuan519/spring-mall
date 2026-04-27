@@ -7,4 +7,7 @@ jwt.secret=YOUR_JWT_SECRET_AT_LEAST_32_CHARS
 spring.security.oauth2.client.registration.google.client-id=YOUR_GOOGLE_CLIENT_ID
 spring.security.oauth2.client.registration.google.client-secret=YOUR_GOOGLE_CLIENT_SECRET
 
+spring.security.oauth2.client.registration.line.client-id=YOUR_LINE_CLIENT_ID
+spring.security.oauth2.client.registration.line.client-secret=YOUR_LINE_CLIENT_SECRET
+
 app.oauth2.redirect-uri=http://localhost:3000/oauth2/callback

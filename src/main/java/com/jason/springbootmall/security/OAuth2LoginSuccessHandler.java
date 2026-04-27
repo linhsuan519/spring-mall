@@ -9,6 +9,7 @@ import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -28,11 +29,25 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
       HttpServletRequest request, HttpServletResponse response, Authentication authentication)
       throws IOException {
 
-    OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
+    OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
+    OAuth2User oauth2User = oauthToken.getPrincipal();
+    String provider = oauthToken.getAuthorizedClientRegistrationId(); // "google" or "line"
 
-    String email = oauth2User.getAttribute("email");
-    String providerUserId = oauth2User.getAttribute("sub"); // Google 的用戶唯一 ID
-    String provider = "google";
+    String providerUserId;
+    String email;
+
+    if ("google".equals(provider)) {
+      providerUserId = oauth2User.getAttribute("sub");
+      email = oauth2User.getAttribute("email");
+    } else {
+      // LINE 回傳 userId，且預設不提供 email
+      providerUserId = oauth2User.getAttribute("userId");
+      email = oauth2User.getAttribute("email");
+      if (email == null) {
+        // LINE 沒有 email 時用 placeholder，確保 user 表 email 欄位不為空
+        email = "line_" + providerUserId + "@line.placeholder";
+      }
+    }
 
     Integer userId = userService.findOrCreateOauthUser(email, provider, providerUserId);
     User user = userService.getUserByEmail(email);
