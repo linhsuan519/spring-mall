@@ -1,6 +1,7 @@
 package com.jason.springbootmall.config;
 
 import com.jason.springbootmall.filter.JwtAuthenticationFilter;
+import com.jason.springbootmall.security.OAuth2LoginSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
   @Autowired private JwtAuthenticationFilter jwtAuthenticationFilter;
+  @Autowired private OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
   @Bean
   public PasswordEncoder passwordEncoder() {
@@ -25,8 +27,9 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable())
+        // OAuth2 流程需要 session 儲存 state，登入完成後仍維持無狀態
         .sessionManagement(
-            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
         .authorizeHttpRequests(
             auth ->
                 auth
@@ -46,6 +49,7 @@ public class SecurityConfig {
                     // 其餘需要登入
                     .anyRequest()
                     .authenticated())
+        .oauth2Login(oauth2 -> oauth2.successHandler(oAuth2LoginSuccessHandler))
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
