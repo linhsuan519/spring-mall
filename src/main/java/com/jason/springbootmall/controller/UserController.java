@@ -31,7 +31,7 @@ public class UserController {
     Integer userId = userService.register(request.getEmail(), encodedPassword);
 
     User user = userService.getUserByEmail(request.getEmail());
-    String token = jwtUtil.generateToken(userId, user.getEmail(), user.getRole());
+    String token = jwtUtil.generateToken(userId, user.getEmail(), user.getRole(), null, null);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(new LoginResponse(token));
   }
@@ -46,7 +46,8 @@ public class UserController {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email 或密碼錯誤");
     }
 
-    String token = jwtUtil.generateToken(user.getUserId(), user.getEmail(), user.getRole());
+    String token =
+        jwtUtil.generateToken(user.getUserId(), user.getEmail(), user.getRole(), null, null);
     return ResponseEntity.ok(new LoginResponse(token));
   }
 }

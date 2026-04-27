@@ -1,14 +1,23 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cart'
+import { useAuthStore } from '../stores/auth'
 
 const route = useRoute()
+const router = useRouter()
 const cartStore = useCartStore()
+const authStore = useAuthStore()
+
 const cartCount = computed(() => cartStore.totalItems)
 const menuOpen = ref(false)
 
 const isActive = (path) => (path === '/' ? route.path === '/' : route.path.startsWith(path))
+
+function handleLogout() {
+  authStore.logout()
+  router.push('/login')
+}
 </script>
 
 <template>
@@ -25,7 +34,10 @@ const isActive = (path) => (path === '/' ? route.path === '/' : route.path.start
         <router-link to="/products" :class="['nav-link', { active: isActive('/products') }]"
           >商品</router-link
         >
-        <router-link to="/admin" :class="['nav-link', { active: isActive('/admin') }]"
+        <router-link
+          v-if="authStore.isAdmin"
+          to="/admin"
+          :class="['nav-link', { active: isActive('/admin') }]"
           >管理</router-link
         >
       </div>
@@ -50,6 +62,24 @@ const isActive = (path) => (path === '/' ? route.path === '/' : route.path.start
             cartCount > 99 ? '99+' : cartCount
           }}</span>
         </router-link>
+
+        <template v-if="authStore.isLoggedIn">
+          <div class="user-avatar">
+            <img
+              v-if="authStore.picture"
+              :src="authStore.picture"
+              class="avatar-img"
+              referrerpolicy="no-referrer"
+            />
+            <span v-else class="avatar-fallback">{{ authStore.email[0]?.toUpperCase() }}</span>
+          </div>
+          <span class="user-email">{{ authStore.displayName || authStore.email }}</span>
+          <button class="btn btn-ghost btn-sm" @click="handleLogout">登出</button>
+        </template>
+        <template v-else>
+          <router-link to="/login" class="btn btn-primary btn-sm">登入</router-link>
+        </template>
+
         <button class="menu-toggle" @click="menuOpen = !menuOpen" aria-label="選單">
           <span :class="['bar', { open: menuOpen }]"></span>
           <span :class="['bar', { open: menuOpen }]"></span>
@@ -63,7 +93,13 @@ const isActive = (path) => (path === '/' ? route.path === '/' : route.path.start
         <router-link to="/" class="mobile-link">首頁</router-link>
         <router-link to="/products" class="mobile-link">商品</router-link>
         <router-link to="/cart" class="mobile-link">購物車</router-link>
-        <router-link to="/admin" class="mobile-link">管理後台</router-link>
+        <router-link v-if="authStore.isAdmin" to="/admin" class="mobile-link">管理後台</router-link>
+        <template v-if="authStore.isLoggedIn">
+          <button class="mobile-link mobile-logout" @click="handleLogout">登出</button>
+        </template>
+        <template v-else>
+          <router-link to="/login" class="mobile-link">登入 / 註冊</router-link>
+        </template>
       </div>
     </transition>
   </nav>
@@ -182,6 +218,40 @@ const isActive = (path) => (path === '/' ? route.path === '/' : route.path.start
   text-align: center;
 }
 
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--accent-dim);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-fallback {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.user-email {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .menu-toggle {
   display: none;
   flex-direction: column;
@@ -218,6 +288,7 @@ const isActive = (path) => (path === '/' ? route.path === '/' : route.path.start
   font-size: 0.95rem;
   color: var(--text-dim);
   transition: var(--transition);
+  text-align: left;
 }
 
 .mobile-link:hover {
@@ -225,8 +296,19 @@ const isActive = (path) => (path === '/' ? route.path === '/' : route.path.start
   background: rgba(255, 255, 255, 0.04);
 }
 
+.mobile-logout {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  color: var(--danger);
+}
+
 @media (max-width: 640px) {
   .nav-links {
+    display: none;
+  }
+  .user-email {
     display: none;
   }
   .menu-toggle {

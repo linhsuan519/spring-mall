@@ -35,10 +35,14 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
     String providerUserId;
     String email;
+    String picture = null;
+    String displayName = null;
 
     if ("google".equals(provider)) {
       providerUserId = oauth2User.getAttribute("sub");
       email = oauth2User.getAttribute("email");
+      picture = oauth2User.getAttribute("picture");
+      displayName = oauth2User.getAttribute("name");
     } else {
       // LINE 回傳 userId，且預設不提供 email
       providerUserId = oauth2User.getAttribute("userId");
@@ -47,12 +51,14 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         // LINE 沒有 email 時用 placeholder，確保 user 表 email 欄位不為空
         email = "line_" + providerUserId + "@line.placeholder";
       }
+      picture = oauth2User.getAttribute("pictureUrl");
+      displayName = oauth2User.getAttribute("displayName");
     }
 
     Integer userId = userService.findOrCreateOauthUser(email, provider, providerUserId);
     User user = userService.getUserByEmail(email);
 
-    String token = jwtUtil.generateToken(userId, email, user.getRole());
+    String token = jwtUtil.generateToken(userId, email, user.getRole(), picture, displayName);
 
     String targetUrl =
         UriComponentsBuilder.fromUriString(redirectUri)
