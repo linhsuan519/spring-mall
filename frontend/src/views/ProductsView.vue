@@ -168,11 +168,7 @@ onMounted(() => {
           <p>目前沒有符合條件的商品</p>
           <button
             class="btn btn-ghost btn-sm"
-            @click="
-              activeCategory = ''
-              searchInput = ''
-              fetchProducts()
-            "
+            @click="activeCategory = ''; searchInput = ''; fetchProducts()"
           >
             清除篩選
           </button>
