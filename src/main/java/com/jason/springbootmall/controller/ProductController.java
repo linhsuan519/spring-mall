@@ -102,4 +102,9 @@ public class ProductController {
 
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
+
+  @GetMapping("/test")
+  public String test() {
+    return "vercel!";
+  }
 }
