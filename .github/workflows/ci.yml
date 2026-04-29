@@ -1,10 +1,13 @@
 name: CI
 
+# 當 dev 分支有新 commit 時觸發
 on:
   push:
     branches: [dev]
 
 jobs:
+  # Job 1：前端檢查
+  # 確認程式碼格式符合 Prettier 規範，並確認 Vite 能成功 build
   frontend:
     name: Frontend Check
     runs-on: ubuntu-latest
@@ -29,6 +32,8 @@ jobs:
       - name: Build
         run: npm run build
 
+  # Job 2：後端檢查
+  # 確認程式碼格式符合 Google Java Format 規範（透過 Spotless）
   backend:
     name: Backend Check
     runs-on: ubuntu-latest
@@ -44,6 +49,8 @@ jobs:
       - name: Spotless check
         run: mvn spotless:check -B
 
+  # Job 3：部署到 Railway
+  # 前兩個 job 都通過後才執行，避免帶著錯誤部署
   deploy:
     name: Deploy to Railway
     needs: [frontend, backend]
@@ -58,6 +65,7 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
+      # RAILWAY_TOKEN 需在 GitHub repo Settings > Secrets 中設定
       - name: Deploy
         run: railway up --detach
         env:
