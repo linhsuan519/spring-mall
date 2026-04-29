@@ -32,7 +32,8 @@ async function fetchProducts() {
     const params = {}
     if (activeCategory.value) params.category = activeCategory.value
     if (searchInput.value.trim()) params.search = searchInput.value.trim()
-    products.value = await getProducts(params)
+    const data = await getProducts(params)
+    products.value = data.results || data
   } catch (e) {
     error.value = '無法載入商品，請確認後端服務是否啟動。'
   } finally {
@@ -168,7 +169,11 @@ onMounted(() => {
           <p>目前沒有符合條件的商品</p>
           <button
             class="btn btn-ghost btn-sm"
-            @click="activeCategory = ''; searchInput = ''; fetchProducts()"
+            @click="
+              activeCategory = ''
+              searchInput = ''
+              fetchProducts()
+            "
           >
             清除篩選
           </button>

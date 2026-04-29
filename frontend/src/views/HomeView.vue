@@ -43,7 +43,7 @@ const CATEGORIES = [
 onMounted(async () => {
   try {
     const data = await getProducts()
-    featured.value = data.slice(0, 4)
+    featured.value = (data.results || data).slice(0, 4)
   } catch (e) {
     console.error(e)
   } finally {
