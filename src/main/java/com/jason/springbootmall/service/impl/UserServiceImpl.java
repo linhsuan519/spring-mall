@@ -14,20 +14,20 @@ import org.springframework.web.server.ResponseStatusException;
 @Component
 public class UserServiceImpl implements UserService {
 
-  private final static Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
+  private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
   @Autowired private UserDao userDao;
 
   @Override
   public Integer register(UserRegisterRequest userRegisterRequest) {
-    //檢查註冊email
+    // 檢查註冊email
     User user = userDao.getUserByEmail(userRegisterRequest.getEmail());
 
     if (user != null) {
       log.warn("email : {} 已經被註冊", userRegisterRequest.getEmail());
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
     }
-    //創建帳號
+    // 創建帳號
     return userDao.createUser(userRegisterRequest);
   }
 

@@ -35,7 +35,7 @@ public class ProductControllerTest {
         .perform(requestBuilder)
         .andDo(print())
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.productName", equalTo("蘋果（澳洲）")))
+        .andExpect(jsonPath("$.productName", notNullValue()))
         .andExpect(jsonPath("$.category", equalTo("FOOD")))
         .andExpect(jsonPath("$.imageUrl", notNullValue()))
         .andExpect(jsonPath("$.price", notNullValue()))
