@@ -14,15 +14,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+  @Autowired private UserService userService;
 
-    @PostMapping("/users/register")
-    public ResponseEntity<User> register(@RequestBody @Valid UserRegisterRequest userRegisterRequest){
-        Integer userId = userService.register(userRegisterRequest);
+  @PostMapping("/users/register")
+  public ResponseEntity<User> register(
+      @RequestBody @Valid UserRegisterRequest userRegisterRequest) {
+    Integer userId = userService.register(userRegisterRequest);
 
-        User user = userService.getUserById(userId);
+    User user = userService.getUserById(userId);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(user);
-    }
+    return ResponseEntity.status(HttpStatus.CREATED).body(user);
+  }
 }

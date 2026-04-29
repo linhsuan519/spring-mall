@@ -7,10 +7,9 @@ import com.jason.springbootmall.model.Product;
 import com.jason.springbootmall.service.ProductService;
 import com.jason.springbootmall.util.Page;
 import jakarta.validation.Valid;
-import java.util.List;
-
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,16 +23,15 @@ public class ProductController {
 
   @GetMapping("/products")
   public ResponseEntity<Page<Product>> getProducts(
-      //Filtering
+      // Filtering
       @RequestParam(required = false) ProductCategory category,
       @RequestParam(required = false) String search,
-      //Sorting
+      // Sorting
       @RequestParam(defaultValue = "created_date") String orderBy,
       @RequestParam(defaultValue = "desc") String sort,
-      //Pagination
+      // Pagination
       @RequestParam(defaultValue = "5") @Max(1000) @Min(0) Integer limit,
-      @RequestParam(defaultValue = "0") @Min(0) Integer offset
-  ) {
+      @RequestParam(defaultValue = "0") @Min(0) Integer offset) {
     ProductQueryParams productQueryParams = new ProductQueryParams();
     productQueryParams.setSearch(search);
     productQueryParams.setCategory(category);
@@ -41,11 +39,11 @@ public class ProductController {
     productQueryParams.setSort(sort);
     productQueryParams.setLimit(limit);
     productQueryParams.setOffset(offset);
-    //取得 product list
+    // 取得 product list
     List<Product> productList = productService.getProducts(productQueryParams);
-    //取得總數
+    // 取得總數
     Integer total = productService.countProduct(productQueryParams);
-    //分頁
+    // 分頁
     Page<Product> page = new Page<>();
     page.setLimit(limit);
     page.setOffset(offset);

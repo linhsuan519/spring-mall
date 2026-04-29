@@ -5,6 +5,7 @@ import com.jason.springbootmall.model.User;
 
 public interface UserDao {
 
-    Integer createUser(UserRegisterRequest userRegisterRequest);
-    User getUserById(Integer userId);
+  Integer createUser(UserRegisterRequest userRegisterRequest);
+
+  User getUserById(Integer userId);
 }
