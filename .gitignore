@@ -35,6 +35,9 @@ build/
 ### Claude Code ###
 .claude/
 
+### Local config ###
+src/main/resources/application-local.properties
+
 ### Frontend ###
 frontend/node_modules/
 frontend/dist/
