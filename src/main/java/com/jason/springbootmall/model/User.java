@@ -8,7 +8,7 @@ public class User {
   private String email;
   @JsonIgnore private String passWord;
   private String role;
-  private Date createDate;
+  private Date createdDate;
   private Date lastModifiedDate;
 
   public Integer getUserId() {
@@ -43,12 +43,12 @@ public class User {
     this.role = role;
   }
 
-  public Date getCreateDate() {
-    return createDate;
+  public Date getCreatedDate() {
+    return createdDate;
   }
 
-  public void setCreateDate(Date createDate) {
-    this.createDate = createDate;
+  public void setCreatedDate(Date createDate) {
+    this.createdDate = createDate;
   }
 
   public Date getLastModifiedDate() {

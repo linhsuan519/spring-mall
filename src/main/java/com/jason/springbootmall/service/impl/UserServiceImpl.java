@@ -29,8 +29,9 @@ public class UserServiceImpl implements UserService {
       log.warn("email : {} 已經被註冊", userRegisterRequest.getEmail());
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
     }
-    //使用MD5 生成密碼雜湊值
-    String hashedPassword = DigestUtils.md5DigestAsHex(userRegisterRequest.getPassword().getBytes());
+    // 使用MD5 生成密碼雜湊值
+    String hashedPassword =
+        DigestUtils.md5DigestAsHex(userRegisterRequest.getPassword().getBytes());
     userRegisterRequest.setPassword(hashedPassword);
 
     // 創建帳號
@@ -47,16 +48,16 @@ public class UserServiceImpl implements UserService {
   public User login(UserLoginRequest userLoginRequest) {
     User user = userDao.getUserByEmail(userLoginRequest.getEmail());
 
-    //檢查user 是否存在
+    // 檢查user 是否存在
     if (user == null) {
       log.warn("email : {} 尚未註冊", userLoginRequest.getEmail());
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
     }
 
-    //使用MD5 生成密碼雜湊值
+    // 使用MD5 生成密碼雜湊值
     String hashedPassword = DigestUtils.md5DigestAsHex(userLoginRequest.getPassword().getBytes());
 
-    //比較密碼
+    // 比較密碼
     if (user.getPassWord().equals(hashedPassword)) {
       return user;
     } else {

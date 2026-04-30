@@ -14,7 +14,7 @@ public class UserRowMapper implements RowMapper<User> {
     user.setRole(rs.getString("role"));
     user.setEmail(rs.getString("email"));
     user.setPassWord(rs.getString("password"));
-    user.setCreateDate(rs.getTimestamp("created_date"));
+    user.setCreatedDate(rs.getTimestamp("created_date"));
     user.setLastModifiedDate(rs.getTime("last_modified_date"));
 
     return user;
