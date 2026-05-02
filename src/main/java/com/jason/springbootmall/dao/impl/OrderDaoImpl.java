@@ -1,7 +1,10 @@
 package com.jason.springbootmall.dao.impl;
 
 import com.jason.springbootmall.dao.OrderDao;
+import com.jason.springbootmall.model.Order;
 import com.jason.springbootmall.model.OrderItem;
+import com.jason.springbootmall.rowmapper.OrderItemRowMapper;
+import com.jason.springbootmall.rowmapper.OrderRowMapper;
 import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -16,9 +19,41 @@ public class OrderDaoImpl implements OrderDao {
   @Autowired private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
   @Override
+  public Order getOrderById(Integer orderId) {
+    String sql =
+        "SELECT order_id, user_id, total_amount, created_date, last_modified_date "
+            + "FROM `order` WHERE order_id = :orderId";
+
+    Map<String, Object> map = new HashMap<>();
+    map.put("orderId", orderId);
+
+    List<Order> orderList = namedParameterJdbcTemplate.query(sql, map, new OrderRowMapper());
+
+    if (!orderList.isEmpty()) {
+      return orderList.get(0);
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public List<OrderItem> getOrderItemsByOrderId(Integer orderId) {
+    String sql =
+        "SELECT oi.order_item_id, oi.order_id, oi.product_id, oi.quantity, oi.amount, p.product_name, p.image_url "
+            + "FROM order_item as oi "
+            + "LEFT JOIN product as p on oi.product_id = p.product_id "
+            + "WHERE oi.order_id = :orderId";
+
+    Map<String, Object> map = new HashMap<>();
+    map.put("orderId", orderId);
+
+      return namedParameterJdbcTemplate.query(sql, map, new OrderItemRowMapper());
+  }
+
+  @Override
   public Integer createOrder(Integer userId, Integer totalAmount) {
     String sql =
-        "INSERT INTO `order`(user_id, total_amount, created_date, last_modified_date)"
+        "INSERT INTO `order`(user_id, total_amount, created_date, last_modified_date) "
             + "VALUES (:userId, :totalAmount, :createdDate, :lastModifiedDate)";
 
     Map<String, Object> map = new HashMap<>();
@@ -55,7 +90,7 @@ public class OrderDaoImpl implements OrderDao {
 
     // 使用batchUpdate 一次性寫入資料庫
     String sql =
-        "INSERT INTO order_item(order_id, product_id, quantity, amount)"
+        "INSERT INTO order_item(order_id, product_id, quantity, amount) "
             + "VALUES (:orderId, :productId, :quantity, :amount)";
 
     MapSqlParameterSource[] parameterSources = new MapSqlParameterSource[orderItemList.size()];
