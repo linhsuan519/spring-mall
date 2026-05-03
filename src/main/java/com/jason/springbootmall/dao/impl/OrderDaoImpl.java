@@ -47,7 +47,7 @@ public class OrderDaoImpl implements OrderDao {
     Map<String, Object> map = new HashMap<>();
     map.put("orderId", orderId);
 
-      return namedParameterJdbcTemplate.query(sql, map, new OrderItemRowMapper());
+    return namedParameterJdbcTemplate.query(sql, map, new OrderItemRowMapper());
   }
 
   @Override
