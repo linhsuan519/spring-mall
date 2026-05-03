@@ -1,9 +1,10 @@
 package com.jason.springbootmall.model;
 
 import com.jason.springbootmall.constant.ProductCategory;
+import java.io.Serializable;
 import java.util.Date;
 
-public class Product {
+public class Product implements Serializable {
 
   private Integer productId;
   private String productName;

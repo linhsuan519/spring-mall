@@ -7,6 +7,8 @@ import com.jason.springbootmall.model.Product;
 import com.jason.springbootmall.service.ProductService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -25,6 +27,7 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
+  @Cacheable(value = "product", key = "#productId")
   public Product getProductById(Integer productId) {
     return productDao.getProductById(productId);
   }
@@ -35,11 +38,13 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
+  @CacheEvict(value = "product", key = "#productId")
   public void updateProduct(Integer productId, ProductRequest productRequest) {
     productDao.updateProduct(productId, productRequest);
   }
 
   @Override
+  @CacheEvict(value = "product", key = "#productId")
   public void deleteProductById(Integer productId) {
     productDao.deleteProductById(productId);
   }
