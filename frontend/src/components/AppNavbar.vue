@@ -16,22 +16,24 @@ const isActive = (path) => (path === '/' ? route.path === '/' : route.path.start
     <div class="nav-inner container">
       <router-link to="/" class="logo">
         <span class="logo-word">Vesto</span>
-        <span class="logo-divider">·</span>
-        <span class="logo-sub">精選商城</span>
+        <span class="logo-sub">Mall</span>
       </router-link>
 
       <div class="nav-links">
-        <router-link to="/" :class="['nav-link', { active: isActive('/') }]">首頁</router-link>
-        <router-link to="/products" :class="['nav-link', { active: isActive('/products') }]"
-          >商品</router-link
-        >
-        <router-link to="/admin" :class="['nav-link', { active: isActive('/admin') }]"
-          >管理</router-link
-        >
+        <router-link to="/" :class="['nav-link', { active: isActive('/') }]">Home</router-link>
+        <router-link to="/products" :class="['nav-link', { active: isActive('/products') }]">
+          Products
+        </router-link>
+        <router-link to="/orders" :class="['nav-link', { active: isActive('/orders') }]">
+          Orders
+        </router-link>
+        <router-link to="/admin" :class="['nav-link', { active: isActive('/admin') }]">
+          Admin
+        </router-link>
       </div>
 
       <div class="nav-right">
-        <router-link to="/cart" class="cart-link">
+        <router-link to="/cart" class="cart-link" aria-label="Cart">
           <svg
             width="22"
             height="22"
@@ -50,20 +52,21 @@ const isActive = (path) => (path === '/' ? route.path === '/' : route.path.start
             cartCount > 99 ? '99+' : cartCount
           }}</span>
         </router-link>
-        <button class="menu-toggle" @click="menuOpen = !menuOpen" aria-label="選單">
-          <span :class="['bar', { open: menuOpen }]"></span>
-          <span :class="['bar', { open: menuOpen }]"></span>
-          <span :class="['bar', { open: menuOpen }]"></span>
+        <button class="menu-toggle" @click="menuOpen = !menuOpen" aria-label="Menu">
+          <span></span>
+          <span></span>
+          <span></span>
         </button>
       </div>
     </div>
 
     <transition name="fade">
       <div v-if="menuOpen" class="mobile-menu" @click="menuOpen = false">
-        <router-link to="/" class="mobile-link">首頁</router-link>
-        <router-link to="/products" class="mobile-link">商品</router-link>
-        <router-link to="/cart" class="mobile-link">購物車</router-link>
-        <router-link to="/admin" class="mobile-link">管理後台</router-link>
+        <router-link to="/" class="mobile-link">Home</router-link>
+        <router-link to="/products" class="mobile-link">Products</router-link>
+        <router-link to="/cart" class="mobile-link">Cart</router-link>
+        <router-link to="/orders" class="mobile-link">Orders</router-link>
+        <router-link to="/admin" class="mobile-link">Admin</router-link>
       </div>
     </transition>
   </nav>
@@ -106,14 +109,8 @@ const isActive = (path) => (path === '/' ? route.path === '/' : route.path.start
   color: var(--accent);
 }
 
-.logo-divider {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-}
-
 .logo-sub {
   font-size: 0.75rem;
-  font-weight: 400;
   color: var(--text-dim);
   letter-spacing: 0.06em;
 }
@@ -128,7 +125,6 @@ const isActive = (path) => (path === '/' ? route.path === '/' : route.path.start
   padding: 6px 14px;
   border-radius: 8px;
   font-size: 0.88rem;
-  font-weight: 400;
   color: var(--text-dim);
   transition: var(--transition);
 }
@@ -147,7 +143,6 @@ const isActive = (path) => (path === '/' ? route.path === '/' : route.path.start
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;
 }
 
 .cart-link {
@@ -193,16 +188,14 @@ const isActive = (path) => (path === '/' ? route.path === '/' : route.path.start
   background: none;
   border: none;
   cursor: pointer;
-  padding: 8px;
 }
 
-.bar {
+.menu-toggle span {
   display: block;
   width: 20px;
   height: 1.5px;
   background: var(--text-dim);
   border-radius: 2px;
-  transition: var(--transition);
 }
 
 .mobile-menu {
@@ -217,7 +210,6 @@ const isActive = (path) => (path === '/' ? route.path === '/' : route.path.start
   padding: 12px 24px;
   font-size: 0.95rem;
   color: var(--text-dim);
-  transition: var(--transition);
 }
 
 .mobile-link:hover {
@@ -225,10 +217,11 @@ const isActive = (path) => (path === '/' ? route.path === '/' : route.path.start
   background: rgba(255, 255, 255, 0.04);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 700px) {
   .nav-links {
     display: none;
   }
+
   .menu-toggle {
     display: flex;
   }

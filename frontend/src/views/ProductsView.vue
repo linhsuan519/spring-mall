@@ -25,6 +25,21 @@ const CATEGORIES = [
   { key: 'CAR', label: '汽車', color: '#94a3b8' },
 ]
 
+function hexToRgb(hex) {
+  const normalized = hex.replace('#', '')
+  const value = Number.parseInt(normalized, 16)
+  return `${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}`
+}
+
+function activeCategoryStyle(cat) {
+  if (activeCategory.value !== cat.key) return {}
+
+  return {
+    '--active-color': cat.color,
+    '--active-color-rgb': hexToRgb(cat.color),
+  }
+}
+
 async function fetchProducts() {
   loading.value = true
   error.value = ''
@@ -116,7 +131,7 @@ onMounted(() => {
               v-for="cat in CATEGORIES"
               :key="cat.key"
               :class="['cat-btn', { active: activeCategory === cat.key }]"
-              :style="activeCategory === cat.key ? { '--active-color': cat.color } : {}"
+              :style="activeCategoryStyle(cat)"
               @click="selectCategory(cat.key)"
             >
               <span class="cat-dot" :style="{ background: cat.color }"></span>
@@ -271,6 +286,8 @@ onMounted(() => {
 }
 
 .cat-btn {
+  --active-color: var(--accent);
+  --active-color-rgb: 236, 232, 222;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -291,7 +308,7 @@ onMounted(() => {
 }
 
 .cat-btn.active {
-  background: rgba(var(--active-color), 0.08);
+  background: rgba(var(--active-color-rgb), 0.08);
   border-color: var(--active-color, var(--accent));
   color: var(--text);
 }
