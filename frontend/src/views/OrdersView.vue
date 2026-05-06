@@ -2,9 +2,10 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { getOrders } from '../api/orders'
+import { useAuthStore } from '../stores/auth'
 
 const route = useRoute()
-const USER_ID = 1
+const authStore = useAuthStore()
 
 const orders = ref([])
 const loading = ref(true)
@@ -24,7 +25,7 @@ async function fetchOrders() {
   loading.value = true
   error.value = ''
   try {
-    const data = await getOrders(USER_ID)
+    const data = await getOrders(authStore.userId)
     orders.value = data.results || []
   } catch {
     error.value = 'Unable to load orders.'
