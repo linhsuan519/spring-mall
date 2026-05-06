@@ -31,6 +31,7 @@ public class UserServiceImpl implements UserService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
     }
 
+    // hash 原始密碼
     userRegisterRequest.setPassword(passwordEncoder.encode(userRegisterRequest.getPassword()));
 
     return userDao.createUser(userRegisterRequest);

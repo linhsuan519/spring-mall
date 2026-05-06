@@ -9,6 +9,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -22,7 +23,9 @@ public class MySecurityConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) {
-    http.cors(Customizer.withDefaults())
+    http.sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+        .cors(Customizer.withDefaults())
         .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(
             auth ->
