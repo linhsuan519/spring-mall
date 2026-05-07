@@ -1,14 +1,11 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useCartStore } from '../stores/cart'
 import { useAuthStore } from '../stores/auth'
 
 const route = useRoute()
 const router = useRouter()
-const cartStore = useCartStore()
 const authStore = useAuthStore()
-const cartCount = computed(() => cartStore.totalItems)
 const menuOpen = ref(false)
 
 const isActive = (path) => (path === '/' ? route.path === '/' : route.path.startsWith(path))
@@ -24,91 +21,71 @@ async function logout() {
   <nav class="navbar">
     <div class="nav-inner container">
       <router-link to="/" class="logo">
-        <span class="logo-word">Vesto</span>
-        <span class="logo-sub">Mall</span>
+        <!-- Pickleball icon: circle with holes pattern -->
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" class="logo-icon">
+          <circle cx="14" cy="14" r="13" fill="#84cc16" />
+          <circle cx="14" cy="14" r="13" stroke="rgba(0,0,0,0.15)" stroke-width="1" />
+          <!-- holes -->
+          <circle cx="9"  cy="10" r="1.6" fill="rgba(8,14,26,0.55)" />
+          <circle cx="14" cy="8"  r="1.6" fill="rgba(8,14,26,0.55)" />
+          <circle cx="19" cy="10" r="1.6" fill="rgba(8,14,26,0.55)" />
+          <circle cx="7"  cy="15" r="1.6" fill="rgba(8,14,26,0.55)" />
+          <circle cx="12" cy="14" r="1.6" fill="rgba(8,14,26,0.55)" />
+          <circle cx="17" cy="14" r="1.6" fill="rgba(8,14,26,0.55)" />
+          <circle cx="21" cy="15" r="1.6" fill="rgba(8,14,26,0.55)" />
+          <circle cx="9"  cy="19" r="1.6" fill="rgba(8,14,26,0.55)" />
+          <circle cx="14" cy="20" r="1.6" fill="rgba(8,14,26,0.55)" />
+          <circle cx="19" cy="19" r="1.6" fill="rgba(8,14,26,0.55)" />
+        </svg>
+        <span class="logo-text">Pickle<span class="logo-accent">Zone</span></span>
       </router-link>
 
       <div class="nav-links">
-        <router-link to="/" :class="['nav-link', { active: isActive('/') }]">Home</router-link>
-        <router-link to="/products" :class="['nav-link', { active: isActive('/products') }]">
-          Products
-        </router-link>
-        <router-link to="/orders" :class="['nav-link', { active: isActive('/orders') }]">
-          Orders
-        </router-link>
-        <router-link to="/admin" :class="['nav-link', { active: isActive('/admin') }]">
-          Admin
-        </router-link>
+        <router-link to="/" :class="['nav-link', { active: isActive('/') }]">首頁</router-link>
+        <router-link to="/courts" :class="['nav-link', { active: isActive('/courts') }]">場地瀏覽</router-link>
+        <router-link
+          v-if="authStore.isAuthenticated"
+          to="/my-reservations"
+          :class="['nav-link', { active: isActive('/my-reservations') }]"
+        >我的預約</router-link>
+        <router-link to="/admin" :class="['nav-link', { active: isActive('/admin') }]">管理後台</router-link>
       </div>
 
       <div class="nav-right">
         <span v-if="authStore.isAuthenticated" class="user-chip">
-          {{ authStore.user.email }}
+          {{ authStore.user?.email }}
         </span>
-        <router-link v-else to="/login" class="auth-link">Sign In</router-link>
-        <router-link to="/cart" class="cart-link" aria-label="Cart">
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <path d="M16 10a4 4 0 01-8 0" />
-          </svg>
-          <span v-if="cartCount > 0" class="cart-badge">{{
-            cartCount > 99 ? '99+' : cartCount
-          }}</span>
-        </router-link>
+        <router-link v-else to="/login" class="auth-link">登入</router-link>
         <button
           v-if="authStore.isAuthenticated"
           class="logout-btn"
           type="button"
-          aria-label="Logout"
-          title="Logout"
+          aria-label="登出"
+          title="登出"
           @click="logout"
         >
-          <svg
-            width="19"
-            height="19"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
             <polyline points="16,17 21,12 16,7" />
             <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
         </button>
-        <button class="menu-toggle" @click="menuOpen = !menuOpen" aria-label="Menu">
-          <span></span>
-          <span></span>
-          <span></span>
+        <button class="menu-toggle" @click="menuOpen = !menuOpen" aria-label="選單">
+          <span :class="{ open: menuOpen }"></span>
+          <span :class="{ open: menuOpen }"></span>
+          <span :class="{ open: menuOpen }"></span>
         </button>
       </div>
     </div>
 
     <transition name="fade">
       <div v-if="menuOpen" class="mobile-menu" @click="menuOpen = false">
-        <router-link to="/" class="mobile-link">Home</router-link>
-        <router-link to="/products" class="mobile-link">Products</router-link>
-        <router-link to="/cart" class="mobile-link">Cart</router-link>
-        <router-link to="/orders" class="mobile-link">Orders</router-link>
-        <router-link to="/admin" class="mobile-link">Admin</router-link>
-        <router-link v-if="!authStore.isAuthenticated" to="/login" class="mobile-link">
-          Sign In
-        </router-link>
-        <button v-else class="mobile-link mobile-button" type="button" @click.stop="logout">
-          Logout
-        </button>
+        <router-link to="/" class="mobile-link">首頁</router-link>
+        <router-link to="/courts" class="mobile-link">場地瀏覽</router-link>
+        <router-link v-if="authStore.isAuthenticated" to="/my-reservations" class="mobile-link">我的預約</router-link>
+        <router-link to="/admin" class="mobile-link">管理後台</router-link>
+        <router-link v-if="!authStore.isAuthenticated" to="/login" class="mobile-link">登入</router-link>
+        <button v-else class="mobile-link mobile-button" type="button" @click.stop="logout">登出</button>
       </div>
     </transition>
   </nav>
@@ -121,9 +98,9 @@ async function logout() {
   left: 0;
   right: 0;
   z-index: 1000;
-  background: rgba(13, 13, 16, 0.88);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: rgba(8, 14, 26, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   height: var(--navbar-h);
 }
@@ -138,42 +115,50 @@ async function logout() {
 
 .logo {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
   flex-shrink: 0;
 }
 
-.logo-word {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.5rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--accent);
+.logo-icon {
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 8px rgba(132, 204, 22, 0.4));
 }
 
-.logo-sub {
-  font-size: 0.75rem;
-  color: var(--text-dim);
+.logo-text {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
   letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.logo-accent {
+  color: var(--accent);
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .nav-link {
   padding: 6px 14px;
   border-radius: 8px;
-  font-size: 0.88rem;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   color: var(--text-dim);
   transition: var(--transition);
 }
 
 .nav-link:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .nav-link.active {
@@ -187,22 +172,10 @@ async function logout() {
   gap: 8px;
 }
 
-.cart-link {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  color: var(--text-dim);
-  transition: var(--transition);
-}
-
 .auth-link,
 .user-chip,
 .logout-btn {
-  height: 40px;
+  height: 38px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -210,15 +183,20 @@ async function logout() {
 }
 
 .auth-link {
-  padding: 0 14px;
-  color: #0d0d10;
+  padding: 0 18px;
+  color: #080e1a;
   background: var(--accent);
-  font-size: 0.84rem;
-  font-weight: 600;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: var(--transition);
 }
 
 .auth-link:hover {
   background: var(--accent-hover);
+  box-shadow: 0 0 16px rgba(132, 204, 22, 0.3);
 }
 
 .user-chip {
@@ -230,13 +208,14 @@ async function logout() {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  border: 1px solid var(--border);
 }
 
 .logout-btn {
-  width: 40px;
+  width: 38px;
   border: 0;
   background: transparent;
-  color: var(--text-dim);
+  color: var(--text-muted);
   cursor: pointer;
   transition: var(--transition);
 }
@@ -246,32 +225,12 @@ async function logout() {
   background: var(--danger-dim);
 }
 
-.cart-link:hover {
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.cart-badge {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  background: var(--accent);
-  color: #0d0d10;
-  font-size: 0.6rem;
-  font-weight: 700;
-  line-height: 1;
-  padding: 2px 5px;
-  border-radius: 99px;
-  min-width: 16px;
-  text-align: center;
-}
-
 .menu-toggle {
   display: none;
   flex-direction: column;
   gap: 4px;
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   align-items: center;
   justify-content: center;
   background: none;
@@ -282,9 +241,10 @@ async function logout() {
 .menu-toggle span {
   display: block;
   width: 20px;
-  height: 1.5px;
+  height: 2px;
   background: var(--text-dim);
   border-radius: 2px;
+  transition: var(--transition);
 }
 
 .mobile-menu {
@@ -296,14 +256,19 @@ async function logout() {
 }
 
 .mobile-link {
-  padding: 12px 24px;
-  font-size: 0.95rem;
+  padding: 13px 24px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--text-dim);
+  transition: var(--transition);
 }
 
 .mobile-link:hover {
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.04);
+  color: var(--accent);
+  background: var(--accent-dim);
 }
 
 .mobile-button {
@@ -311,21 +276,14 @@ async function logout() {
   text-align: left;
   background: transparent;
   cursor: pointer;
+  width: 100%;
 }
 
 @media (max-width: 700px) {
-  .nav-links {
-    display: none;
-  }
-
+  .nav-links { display: none; }
   .user-chip,
   .auth-link,
-  .logout-btn {
-    display: none;
-  }
-
-  .menu-toggle {
-    display: flex;
-  }
+  .logout-btn { display: none; }
+  .menu-toggle { display: flex; }
 }
 </style>

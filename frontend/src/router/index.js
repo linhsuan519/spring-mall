@@ -5,21 +5,15 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', component: () => import('../views/HomeView.vue') },
-    { path: '/products', component: () => import('../views/ProductsView.vue') },
-    { path: '/products/:id', component: () => import('../views/ProductDetailView.vue') },
+    { path: '/courts', component: () => import('../views/CourtsView.vue') },
     {
       path: '/login',
       component: () => import('../views/LoginView.vue'),
       meta: { guestOnly: true },
     },
     {
-      path: '/cart',
-      component: () => import('../views/CartView.vue'),
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/orders',
-      component: () => import('../views/OrdersView.vue'),
+      path: '/my-reservations',
+      component: () => import('../views/MyReservationsView.vue'),
       meta: { requiresAuth: true },
     },
     {
