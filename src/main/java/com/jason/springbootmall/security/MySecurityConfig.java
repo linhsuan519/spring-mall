@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,7 +20,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class MySecurityConfig {
 
   private static final Set<String> PUBLIC_PATHS = Set.of("/users/register", "/users/login");
-  private static final Pattern USER_ORDERS_PATH = Pattern.compile("^/users/\\d+/orders$");
+  private static final Pattern COURT_DETAIL_PATH = Pattern.compile("^/courts/\\d+$");
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) {
@@ -31,6 +32,9 @@ public class MySecurityConfig {
             auth ->
                 auth.requestMatchers(MySecurityConfig::isPublicEndpoint)
                     .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/courts").hasAuthority("ROLE_ADMIN")
+                    .requestMatchers(HttpMethod.PUT, "/courts/**").hasAuthority("ROLE_ADMIN")
+                    .requestMatchers(HttpMethod.DELETE, "/courts/**").hasAuthority("ROLE_ADMIN")
                     .anyRequest()
                     .authenticated())
         .httpBasic(AbstractHttpConfigurer::disable)
@@ -51,7 +55,16 @@ public class MySecurityConfig {
 
     String path = getPathWithoutContextPath(request);
 
-    return PUBLIC_PATHS.contains(path) || USER_ORDERS_PATH.matcher(path).matches();
+    if (PUBLIC_PATHS.contains(path)) {
+      return true;
+    }
+
+    // GET /courts 場地列表、GET /courts/{id} 場地詳情 為公開
+    if ("GET".equalsIgnoreCase(request.getMethod())) {
+      return path.equals("/courts") || COURT_DETAIL_PATH.matcher(path).matches();
+    }
+
+    return false;
   }
 
   private static String getPathWithoutContextPath(HttpServletRequest request) {
