@@ -3,6 +3,7 @@ import axios from 'axios'
 const api = axios.create({
   baseURL: `${import.meta.env.VITE_API_BASE_URL || ''}/api/products`,
   timeout: 10000,
+  withCredentials: true,
 })
 
 export const getProducts = (params = {}) => api.get('', { params }).then((r) => r.data)

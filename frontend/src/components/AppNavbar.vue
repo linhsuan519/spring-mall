@@ -1,14 +1,23 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cart'
+import { useAuthStore } from '../stores/auth'
 
 const route = useRoute()
+const router = useRouter()
 const cartStore = useCartStore()
+const authStore = useAuthStore()
 const cartCount = computed(() => cartStore.totalItems)
 const menuOpen = ref(false)
 
 const isActive = (path) => (path === '/' ? route.path === '/' : route.path.startsWith(path))
+
+async function logout() {
+  await authStore.logout()
+  menuOpen.value = false
+  router.push('/login')
+}
 </script>
 
 <template>
@@ -33,6 +42,10 @@ const isActive = (path) => (path === '/' ? route.path === '/' : route.path.start
       </div>
 
       <div class="nav-right">
+        <span v-if="authStore.isAuthenticated" class="user-chip">
+          {{ authStore.user.email }}
+        </span>
+        <router-link v-else to="/login" class="auth-link">Sign In</router-link>
         <router-link to="/cart" class="cart-link" aria-label="Cart">
           <svg
             width="22"
@@ -52,6 +65,29 @@ const isActive = (path) => (path === '/' ? route.path === '/' : route.path.start
             cartCount > 99 ? '99+' : cartCount
           }}</span>
         </router-link>
+        <button
+          v-if="authStore.isAuthenticated"
+          class="logout-btn"
+          type="button"
+          aria-label="Logout"
+          title="Logout"
+          @click="logout"
+        >
+          <svg
+            width="19"
+            height="19"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+            <polyline points="16,17 21,12 16,7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+        </button>
         <button class="menu-toggle" @click="menuOpen = !menuOpen" aria-label="Menu">
           <span></span>
           <span></span>
@@ -67,6 +103,12 @@ const isActive = (path) => (path === '/' ? route.path === '/' : route.path.start
         <router-link to="/cart" class="mobile-link">Cart</router-link>
         <router-link to="/orders" class="mobile-link">Orders</router-link>
         <router-link to="/admin" class="mobile-link">Admin</router-link>
+        <router-link v-if="!authStore.isAuthenticated" to="/login" class="mobile-link">
+          Sign In
+        </router-link>
+        <button v-else class="mobile-link mobile-button" type="button" @click.stop="logout">
+          Logout
+        </button>
       </div>
     </transition>
   </nav>
@@ -157,6 +199,53 @@ const isActive = (path) => (path === '/' ? route.path === '/' : route.path.start
   transition: var(--transition);
 }
 
+.auth-link,
+.user-chip,
+.logout-btn {
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.auth-link {
+  padding: 0 14px;
+  color: #0d0d10;
+  background: var(--accent);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.auth-link:hover {
+  background: var(--accent-hover);
+}
+
+.user-chip {
+  max-width: 180px;
+  padding: 0 12px;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.78rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logout-btn {
+  width: 40px;
+  border: 0;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.logout-btn:hover {
+  color: var(--danger);
+  background: var(--danger-dim);
+}
+
 .cart-link:hover {
   color: var(--text);
   background: rgba(255, 255, 255, 0.05);
@@ -217,8 +306,21 @@ const isActive = (path) => (path === '/' ? route.path === '/' : route.path.start
   background: rgba(255, 255, 255, 0.04);
 }
 
+.mobile-button {
+  border: 0;
+  text-align: left;
+  background: transparent;
+  cursor: pointer;
+}
+
 @media (max-width: 700px) {
   .nav-links {
+    display: none;
+  }
+
+  .user-chip,
+  .auth-link,
+  .logout-btn {
     display: none;
   }
 

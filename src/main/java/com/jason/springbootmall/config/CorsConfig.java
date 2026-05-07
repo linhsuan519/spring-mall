@@ -19,7 +19,8 @@ public class CorsConfig {
             .allowedOriginPatterns(
                 "http://localhost:*", "http://127.0.0.1:*", "https://*.vercel.app")
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-            .allowedHeaders("*");
+            .allowedHeaders("*")
+            .allowCredentials(true);
       }
     };
   }

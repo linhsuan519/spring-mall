@@ -2,12 +2,13 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { createOrder } from '../api/orders'
+import { useAuthStore } from '../stores/auth'
 import { useCartStore } from '../stores/cart'
 
 const router = useRouter()
 const cartStore = useCartStore()
+const authStore = useAuthStore()
 
-const USER_ID = 1
 const submitting = ref(false)
 const error = ref('')
 
@@ -23,6 +24,10 @@ function unitPrice(item) {
 
 async function checkout() {
   if (!cartStore.items.length || submitting.value) return
+  if (!authStore.userId) {
+    router.push({ path: '/login', query: { redirect: '/cart' } })
+    return
+  }
 
   submitting.value = true
   error.value = ''
@@ -35,7 +40,7 @@ async function checkout() {
   }
 
   try {
-    const order = await createOrder(USER_ID, payload)
+    const order = await createOrder(authStore.userId, payload)
     const orderId = order.orderId || order.ordertId
     cartStore.clearCart()
     router.push({ path: '/orders', query: orderId ? { created: orderId } : {} })

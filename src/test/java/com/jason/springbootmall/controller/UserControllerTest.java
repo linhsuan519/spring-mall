@@ -1,8 +1,10 @@
 package com.jason.springbootmall.controller;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -15,7 +17,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -103,7 +107,8 @@ public class UserControllerTest {
     register(userRegisterRequest);
 
     // 再測試登入功能
-    UserLoginRequest userLoginRequest = new UserLoginRequest();
+    UserLoginRequest userLoginRequest;
+    userLoginRequest = new UserLoginRequest();
     userLoginRequest.setEmail(userRegisterRequest.getEmail());
     userLoginRequest.setPassword(userRegisterRequest.getPassword());
 
@@ -121,6 +126,38 @@ public class UserControllerTest {
         .andExpect(jsonPath("$.email", equalTo(userRegisterRequest.getEmail())))
         .andExpect(jsonPath("$.createdDate", notNullValue()))
         .andExpect(jsonPath("$.lastModifiedDate", notNullValue()));
+  }
+
+  @Test
+  public void login_successCreatesSession() throws Exception {
+    UserRegisterRequest userRegisterRequest = new UserRegisterRequest();
+    userRegisterRequest.setEmail("test-session@gmail.com");
+    userRegisterRequest.setPassword("123");
+
+    register(userRegisterRequest);
+
+    UserLoginRequest userLoginRequest = new UserLoginRequest();
+    userLoginRequest.setEmail(userRegisterRequest.getEmail());
+    userLoginRequest.setPassword(userRegisterRequest.getPassword());
+
+    String json = objectMapper.writeValueAsString(userLoginRequest);
+
+    MvcResult loginResult =
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.post("/users/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(json))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    MockHttpSession session = (MockHttpSession) loginResult.getRequest().getSession(false);
+    assertNotNull(session);
+
+    mockMvc
+        .perform(MockMvcRequestBuilders.get("/testuser").session(session))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString(userRegisterRequest.getEmail())));
   }
 
   @Test
