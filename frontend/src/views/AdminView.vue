@@ -53,7 +53,8 @@ async function fetchProducts() {
   loading.value = true
   error.value = ''
   try {
-    products.value = await getProducts()
+    const data = await getProducts({ limit: 1000 })
+    products.value = data.results || data
   } catch {
     error.value = '無法載入商品資料'
   } finally {
