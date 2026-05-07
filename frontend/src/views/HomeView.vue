@@ -38,7 +38,55 @@ const authStore = useAuthStore()
           <circle cx="400" cy="250" r="5" fill="rgba(14,165,233,0.25)" />
         </svg>
         <div class="noise-overlay"></div>
+
+        <!-- Bouncing pickleballs -->
+        <div class="ball ball-1">
+          <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="14" cy="14" r="13" fill="#84cc16" opacity="0.9"/>
+            <circle cx="9"  cy="10" r="1.6" fill="#080e1a" opacity="0.55"/>
+            <circle cx="14" cy="8"  r="1.6" fill="#080e1a" opacity="0.55"/>
+            <circle cx="19" cy="10" r="1.6" fill="#080e1a" opacity="0.55"/>
+            <circle cx="7"  cy="15" r="1.6" fill="#080e1a" opacity="0.55"/>
+            <circle cx="12" cy="14" r="1.6" fill="#080e1a" opacity="0.55"/>
+            <circle cx="17" cy="14" r="1.6" fill="#080e1a" opacity="0.55"/>
+            <circle cx="21" cy="15" r="1.6" fill="#080e1a" opacity="0.55"/>
+            <circle cx="9"  cy="19" r="1.6" fill="#080e1a" opacity="0.55"/>
+            <circle cx="14" cy="20" r="1.6" fill="#080e1a" opacity="0.55"/>
+            <circle cx="19" cy="19" r="1.6" fill="#080e1a" opacity="0.55"/>
+          </svg>
+        </div>
+        <div class="ball ball-2">
+          <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="14" cy="14" r="13" fill="#0ea5e9" opacity="0.8"/>
+            <circle cx="9"  cy="10" r="1.6" fill="#080e1a" opacity="0.5"/>
+            <circle cx="14" cy="8"  r="1.6" fill="#080e1a" opacity="0.5"/>
+            <circle cx="19" cy="10" r="1.6" fill="#080e1a" opacity="0.5"/>
+            <circle cx="7"  cy="15" r="1.6" fill="#080e1a" opacity="0.5"/>
+            <circle cx="12" cy="14" r="1.6" fill="#080e1a" opacity="0.5"/>
+            <circle cx="17" cy="14" r="1.6" fill="#080e1a" opacity="0.5"/>
+            <circle cx="21" cy="15" r="1.6" fill="#080e1a" opacity="0.5"/>
+            <circle cx="9"  cy="19" r="1.6" fill="#080e1a" opacity="0.5"/>
+            <circle cx="14" cy="20" r="1.6" fill="#080e1a" opacity="0.5"/>
+            <circle cx="19" cy="19" r="1.6" fill="#080e1a" opacity="0.5"/>
+          </svg>
+        </div>
+        <div class="ball ball-3">
+          <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="14" cy="14" r="13" fill="#84cc16" opacity="0.6"/>
+            <circle cx="9"  cy="10" r="1.6" fill="#080e1a" opacity="0.45"/>
+            <circle cx="14" cy="8"  r="1.6" fill="#080e1a" opacity="0.45"/>
+            <circle cx="19" cy="10" r="1.6" fill="#080e1a" opacity="0.45"/>
+            <circle cx="7"  cy="15" r="1.6" fill="#080e1a" opacity="0.45"/>
+            <circle cx="12" cy="14" r="1.6" fill="#080e1a" opacity="0.45"/>
+            <circle cx="17" cy="14" r="1.6" fill="#080e1a" opacity="0.45"/>
+            <circle cx="21" cy="15" r="1.6" fill="#080e1a" opacity="0.45"/>
+            <circle cx="9"  cy="19" r="1.6" fill="#080e1a" opacity="0.45"/>
+            <circle cx="14" cy="20" r="1.6" fill="#080e1a" opacity="0.45"/>
+            <circle cx="19" cy="19" r="1.6" fill="#080e1a" opacity="0.45"/>
+          </svg>
+        </div>
       </div>
+
 
       <div class="container hero-content">
         <div class="hero-label">
@@ -633,12 +681,12 @@ const steps = [
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--text);
+  color: #e2eeff;
 }
 
 .type-desc {
   font-size: 0.9rem;
-  color: var(--text-dim);
+  color: #7b96b8;
   line-height: 1.7;
   flex: 1;
 }
@@ -728,4 +776,72 @@ const steps = [
   .hero-title { font-size: clamp(3rem, 14vw, 5rem); }
   .hero-stats { gap: 16px; }
 }
+
+/* ===== BOUNCING BALLS ===== */
+.ball {
+  position: absolute;
+  pointer-events: none;
+  will-change: transform;
+  filter: drop-shadow(0 0 12px rgba(132,204,22,0.4));
+}
+
+.ball-1 {
+  width: 48px; height: 48px;
+  top: 15%;
+  left: 70%;
+  animation: bounce1 7s ease-in-out infinite;
+}
+
+.ball-2 {
+  width: 36px; height: 36px;
+  top: 60%;
+  left: 80%;
+  animation: bounce2 5.5s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 10px rgba(14,165,233,0.45));
+}
+
+.ball-3 {
+  width: 28px; height: 28px;
+  top: 35%;
+  left: 55%;
+  animation: bounce3 9s ease-in-out infinite;
+  opacity: 0.6;
+}
+
+.ball svg { animation: ball-spin 2.5s linear infinite; display: block; }
+.ball-2 svg { animation-duration: 3.5s; animation-direction: reverse; }
+.ball-3 svg { animation-duration: 4.5s; }
+
+@keyframes ball-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes bounce1 {
+  0%   { transform: translate(0px,   0px); }
+  15%  { transform: translate(-90px, 140px); }
+  30%  { transform: translate(-30px, 280px); }
+  45%  { transform: translate(60px,  150px); }
+  60%  { transform: translate(30px,  -60px); }
+  75%  { transform: translate(-60px, 80px); }
+  90%  { transform: translate(-120px,200px); }
+  100% { transform: translate(0px,   0px); }
+}
+
+@keyframes bounce2 {
+  0%   { transform: translate(0px, 0px); }
+  25%  { transform: translate(-80px, -100px); }
+  50%  { transform: translate(-160px, 20px); }
+  75%  { transform: translate(-60px, -140px); }
+  100% { transform: translate(0px, 0px); }
+}
+
+@keyframes bounce3 {
+  0%   { transform: translate(0px, 0px); }
+  20%  { transform: translate(120px, 180px); }
+  40%  { transform: translate(60px, -80px); }
+  60%  { transform: translate(-80px, 120px); }
+  80%  { transform: translate(40px, 200px); }
+  100% { transform: translate(0px, 0px); }
+}
+
 </style>

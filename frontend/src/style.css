@@ -25,6 +25,29 @@
   --navbar-h: 64px;
 }
 
+[data-theme="light"] {
+  --bg: #f0f4f8;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --card-hover: #f8fafc;
+  --border: #e2e8f0;
+  --border-light: #cbd5e1;
+  --accent: #65a30d;
+  --accent-hover: #4d7c0f;
+  --accent-dim: rgba(101, 163, 13, 0.1);
+  --accent-dim2: rgba(101, 163, 13, 0.18);
+  --sky: #0284c7;
+  --sky-hover: #0369a1;
+  --sky-dim: rgba(2, 132, 199, 0.1);
+  --text: #0f172a;
+  --text-dim: #475569;
+  --text-muted: #94a3b8;
+  --danger: #dc2626;
+  --danger-dim: rgba(220, 38, 38, 0.08);
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.14);
+}
+
 *,
 *::before,
 *::after {

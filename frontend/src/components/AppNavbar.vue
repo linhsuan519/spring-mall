@@ -2,11 +2,13 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { useTheme } from '../composables/useTheme'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const menuOpen = ref(false)
+const { theme, toggle: toggleTheme } = useTheme()
 
 const isActive = (path) => (path === '/' ? route.path === '/' : route.path.startsWith(path))
 
@@ -52,6 +54,22 @@ async function logout() {
       </div>
 
       <div class="nav-right">
+        <!-- Theme toggle -->
+        <button class="theme-btn" @click="toggleTheme" :title="theme === 'dark' ? '切換為亮色模式' : '切換為深色模式'" aria-label="切換主題">
+          <!-- Moon icon (shown in dark mode) -->
+          <svg v-if="theme === 'dark'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+          </svg>
+          <!-- Sun icon (shown in light mode) -->
+          <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        </button>
+
         <span v-if="authStore.isAuthenticated" class="user-chip">
           {{ authStore.user?.email }}
         </span>
@@ -98,11 +116,12 @@ async function logout() {
   left: 0;
   right: 0;
   z-index: 1000;
-  background: rgba(8, 14, 26, 0.9);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   height: var(--navbar-h);
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .nav-inner {
@@ -223,6 +242,27 @@ async function logout() {
 .logout-btn:hover {
   color: var(--danger);
   background: var(--danger-dim);
+}
+
+.theme-btn {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border-light);
+  background: transparent;
+  color: var(--text-dim);
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.theme-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-dim);
 }
 
 .menu-toggle {
