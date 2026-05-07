@@ -1,22 +1,32 @@
 package com.jason.springbootmall.dto;
 
-import com.jason.springbootmall.constant.ProductCategory;
+import com.jason.springbootmall.constant.CourtStatus;
+import com.jason.springbootmall.constant.CourtType;
 
-public class ProductQueryParams {
+public class CourtQueryParams {
 
-  private ProductCategory category;
+  private CourtType courtType;
+  private CourtStatus status;
   private String search;
   private String orderBy;
   private String sort;
   private Integer limit;
   private Integer offset;
 
-  public ProductCategory getCategory() {
-    return category;
+  public CourtType getCourtType() {
+    return courtType;
   }
 
-  public void setCategory(ProductCategory category) {
-    this.category = category;
+  public void setCourtType(CourtType courtType) {
+    this.courtType = courtType;
+  }
+
+  public CourtStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(CourtStatus status) {
+    this.status = status;
   }
 
   public String getSearch() {
