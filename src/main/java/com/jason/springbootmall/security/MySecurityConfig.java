@@ -19,6 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class MySecurityConfig {
 
   private static final Set<String> PUBLIC_PATHS = Set.of("/users/register", "/users/login");
+  private static final Pattern PRODUCTS_PATH = Pattern.compile("^/products(?:/\\d+)?$");
   private static final Pattern USER_ORDERS_PATH = Pattern.compile("^/users/\\d+/orders$");
 
   @Bean
@@ -51,7 +52,13 @@ public class MySecurityConfig {
 
     String path = getPathWithoutContextPath(request);
 
-    return PUBLIC_PATHS.contains(path) || USER_ORDERS_PATH.matcher(path).matches();
+    return PUBLIC_PATHS.contains(path)
+        || isPublicProductRead(request.getMethod(), path)
+        || USER_ORDERS_PATH.matcher(path).matches();
+  }
+
+  private static boolean isPublicProductRead(String method, String path) {
+    return "GET".equalsIgnoreCase(method) && PRODUCTS_PATH.matcher(path).matches();
   }
 
   private static String getPathWithoutContextPath(HttpServletRequest request) {
