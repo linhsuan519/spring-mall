@@ -44,13 +44,12 @@ async function logout() {
 
       <div class="nav-links">
         <router-link to="/" :class="['nav-link', { active: isActive('/') }]">首頁</router-link>
-        <router-link to="/courts" :class="['nav-link', { active: isActive('/courts') }]">場地瀏覽</router-link>
+        <router-link to="/activities" :class="['nav-link', { active: isActive('/activities') }]">揪球活動</router-link>
         <router-link
           v-if="authStore.isAuthenticated"
-          to="/my-reservations"
-          :class="['nav-link', { active: isActive('/my-reservations') }]"
-        >我的預約</router-link>
-        <router-link to="/admin" :class="['nav-link', { active: isActive('/admin') }]">管理後台</router-link>
+          to="/my-activities"
+          :class="['nav-link', { active: isActive('/my-activities') }]"
+        >我的揪球</router-link>
       </div>
 
       <div class="nav-right">
@@ -99,9 +98,9 @@ async function logout() {
     <transition name="fade">
       <div v-if="menuOpen" class="mobile-menu" @click="menuOpen = false">
         <router-link to="/" class="mobile-link">首頁</router-link>
-        <router-link to="/courts" class="mobile-link">場地瀏覽</router-link>
-        <router-link v-if="authStore.isAuthenticated" to="/my-reservations" class="mobile-link">我的預約</router-link>
-        <router-link to="/admin" class="mobile-link">管理後台</router-link>
+        <router-link to="/activities" class="mobile-link">揪球活動</router-link>
+        <router-link v-if="authStore.isAuthenticated" to="/my-activities" class="mobile-link">我的揪球</router-link>
+        <router-link v-if="authStore.isAuthenticated" to="/create-activity" class="mobile-link">發起揪球</router-link>
         <router-link v-if="!authStore.isAuthenticated" to="/login" class="mobile-link">登入</router-link>
         <button v-else class="mobile-link mobile-button" type="button" @click.stop="logout">登出</button>
       </div>

@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,10 +19,10 @@ import org.springframework.security.web.SecurityFilterChain;
 public class MySecurityConfig {
 
   private static final Set<String> PUBLIC_PATHS = Set.of("/users/register", "/users/login");
-  private static final Pattern COURT_DETAIL_PATH = Pattern.compile("^/courts/\\d+$");
+  private static final Pattern ACTIVITY_DETAIL_PATH = Pattern.compile("^/activities/\\d+$");
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
         .cors(Customizer.withDefaults())
@@ -32,9 +31,6 @@ public class MySecurityConfig {
             auth ->
                 auth.requestMatchers(MySecurityConfig::isPublicEndpoint)
                     .permitAll()
-                    .requestMatchers(HttpMethod.POST, "/courts").hasAuthority("ROLE_ADMIN")
-                    .requestMatchers(HttpMethod.PUT, "/courts/**").hasAuthority("ROLE_ADMIN")
-                    .requestMatchers(HttpMethod.DELETE, "/courts/**").hasAuthority("ROLE_ADMIN")
                     .anyRequest()
                     .authenticated())
         .httpBasic(AbstractHttpConfigurer::disable)
@@ -59,9 +55,9 @@ public class MySecurityConfig {
       return true;
     }
 
-    // GET /courts 場地列表、GET /courts/{id} 場地詳情 為公開
+    // GET /activities 活動列表、GET /activities/{id} 活動詳情 為公開
     if ("GET".equalsIgnoreCase(request.getMethod())) {
-      return path.equals("/courts") || COURT_DETAIL_PATH.matcher(path).matches();
+      return path.equals("/activities") || ACTIVITY_DETAIL_PATH.matcher(path).matches();
     }
 
     return false;
@@ -81,25 +77,4 @@ public class MySecurityConfig {
 
     return path;
   }
-
-  // 測試用 in-memory users 範例：
-  // 目前正式登入走 MyUserDetailService 查資料庫，所以這段先保留註解，不啟用。
-  // 如果之後要同時支援 DB users 和 in-memory users，建議另外做一個合併版 UserDetailsService，
-  // 不要直接打開這個 Bean，避免 Spring Security 同時找到兩個 UserDetailsService 時設定變混亂。
-  //
-  //  @Bean
-  //  public InMemoryUserDetailsManager userDetailsManager(PasswordEncoder passwordEncoder) {
-  //    UserDetails userTest1 =
-  //        User.withUsername("test1")
-  //            .password(passwordEncoder.encode("111"))
-  //            .roles("ADMIN")
-  //            .build();
-  //    UserDetails userTest2 =
-  //        User.withUsername("user")
-  //            .password(passwordEncoder.encode("user"))
-  //            .roles("ADMIN", "USER")
-  //            .build();
-  //
-  //    return new InMemoryUserDetailsManager(userTest1, userTest2);
-  //  }
 }

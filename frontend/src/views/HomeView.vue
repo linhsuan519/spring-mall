@@ -91,44 +91,44 @@ const authStore = useAuthStore()
       <div class="container hero-content">
         <div class="hero-label">
           <span class="label-dot"></span>
-          即時預約 · 隨時開球
+          揪球友 · 一起開球
         </div>
         <h1 class="hero-title">
-          <span class="line line-1">BOOK YOUR</span>
-          <span class="line line-2 accent-text">COURT</span>
-          <span class="line line-3">NOW</span>
+          <span class="line line-1">FIND YOUR</span>
+          <span class="line line-2 accent-text">CREW</span>
+          <span class="line line-3">PLAY NOW</span>
         </h1>
-        <p class="hero-sub">找到最近的匹克球場，選擇時段，立即預約。<br>最快三步，場地到手。</p>
+        <p class="hero-sub">發起揪球活動，找到同程度的球友，一起上場。<br>三步完成揪團，立即開球。</p>
         <div class="hero-actions">
-          <button class="btn btn-primary btn-lg" @click="router.push('/courts')">
-            瀏覽場地
+          <button class="btn btn-primary btn-lg" @click="router.push('/activities')">
+            瀏覽活動
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/>
             </svg>
           </button>
           <button
             class="btn btn-ghost btn-lg"
-            @click="router.push(authStore.isAuthenticated ? '/my-reservations' : '/login')"
+            @click="router.push(authStore.isAuthenticated ? '/create-activity' : '/login')"
           >
-            {{ authStore.isAuthenticated ? '我的預約' : '立即登入' }}
+            {{ authStore.isAuthenticated ? '發起揪球' : '立即登入' }}
           </button>
         </div>
 
         <!-- Stats strip -->
         <div class="hero-stats">
           <div class="stat-item">
-            <span class="stat-n">2</span>
-            <span class="stat-l">場地類型</span>
+            <span class="stat-n">3</span>
+            <span class="stat-l">程度分級</span>
           </div>
           <div class="stat-sep"></div>
           <div class="stat-item">
             <span class="stat-n">24/7</span>
-            <span class="stat-l">線上預約</span>
+            <span class="stat-l">線上揪球</span>
           </div>
           <div class="stat-sep"></div>
           <div class="stat-item">
             <span class="stat-n">即時</span>
-            <span class="stat-l">確認通知</span>
+            <span class="stat-l">加入活動</span>
           </div>
         </div>
       </div>
@@ -144,7 +144,7 @@ const authStore = useAuthStore()
     <section class="steps-section">
       <div class="container">
         <p class="section-label">流程說明</p>
-        <h2 class="section-title">三步完成預約</h2>
+        <h2 class="section-title">三步完成揪球</h2>
         <div class="steps-grid">
           <div class="step-card" v-for="(step, i) in steps" :key="i" :style="{ '--step-color': step.color }">
             <div class="step-num">{{ String(i + 1).padStart(2, '0') }}</div>
@@ -163,27 +163,26 @@ const authStore = useAuthStore()
       </div>
     </section>
 
-    <!-- ========== COURT TYPES ========== -->
+    <!-- ========== SKILL LEVELS ========== -->
     <section class="types-section">
       <div class="container">
-        <p class="section-label">場地類型</p>
-        <h2 class="section-title">選擇你的場地</h2>
+        <p class="section-label">程度分級</p>
+        <h2 class="section-title">找到適合你的活動</h2>
         <div class="types-grid">
 
-          <div class="type-card type-indoor" @click="router.push('/courts?type=INDOOR')">
+          <div class="type-card type-indoor" @click="router.push('/activities?skillLevel=BEGINNER')">
             <div class="type-bg-pattern indoor-pattern"></div>
             <div class="type-body">
               <div class="type-icon">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-                  <polyline points="9,22 9,12 15,12 15,22"/>
+                  <path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M12 8v4l3 3"/>
                 </svg>
               </div>
-              <span class="type-tag">INDOOR</span>
-              <h3 class="type-name">室內場地</h3>
-              <p class="type-desc">全天候恆溫環境，不受天氣影響。專業地板、良好採光，適合進階訓練。</p>
+              <span class="type-tag">BEGINNER</span>
+              <h3 class="type-name">新手入門</h3>
+              <p class="type-desc">剛接觸匹克球？沒問題！歡迎新手加入，友善的球友會帶你入門，享受打球的樂趣。</p>
               <div class="type-cta">
-                查看室內場地
+                瀏覽新手活動
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/>
                 </svg>
@@ -191,27 +190,19 @@ const authStore = useAuthStore()
             </div>
           </div>
 
-          <div class="type-card type-outdoor" @click="router.push('/courts?type=OUTDOOR')">
+          <div class="type-card type-outdoor" @click="router.push('/activities?skillLevel=ADVANCED')">
             <div class="type-bg-pattern outdoor-pattern"></div>
             <div class="type-body">
               <div class="type-icon">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <circle cx="12" cy="12" r="5"/>
-                  <line x1="12" y1="1" x2="12" y2="3"/>
-                  <line x1="12" y1="21" x2="12" y2="23"/>
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                  <line x1="1" y1="12" x2="3" y2="12"/>
-                  <line x1="21" y1="12" x2="23" y2="12"/>
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                  <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
                 </svg>
               </div>
-              <span class="type-tag">OUTDOOR</span>
-              <h3 class="type-name">室外場地</h3>
-              <p class="type-desc">開闊的戶外環境，享受自然光線。快乾硬地球場，感受原汁原味的戶外比賽。</p>
+              <span class="type-tag">ADVANCED</span>
+              <h3 class="type-name">高手對決</h3>
+              <p class="type-desc">尋找勢均力敵的對手？加入高水準的揪球活動，展現你的技術，享受激烈對抗。</p>
               <div class="type-cta">
-                查看室外場地
+                瀏覽高手活動
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/>
                 </svg>
@@ -235,10 +226,10 @@ const authStore = useAuthStore()
           </div>
           <div class="cta-text">
             <h2 class="cta-title">準備好上場了嗎？</h2>
-            <p class="cta-sub">立即瀏覽可預約的場地，搶先佔位。</p>
+            <p class="cta-sub">立即發起揪球，或加入附近的活動，找到你的球友。</p>
           </div>
-          <button class="btn btn-primary btn-lg" @click="router.push('/courts')">
-            立刻預約
+          <button class="btn btn-primary btn-lg" @click="router.push('/activities')">
+            立刻揪球
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/>
             </svg>
@@ -253,26 +244,27 @@ const authStore = useAuthStore()
 <script>
 const steps = [
   {
-    title: '瀏覽場地',
-    desc: '依照類型、地點篩選，找到最適合你的場地。',
+    title: '發起揪球',
+    desc: '填寫活動時間、地點、人數和程度，一鍵發布揪球活動。',
     color: '#84cc16',
     icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
     </svg>`,
   },
   {
-    title: '選擇時段',
-    desc: '挑選日期與開始/結束時間，系統即時確認是否可用。',
+    title: '球友加入',
+    desc: '同程度的球友瀏覽活動後報名，自動確認加入。',
     color: '#0ea5e9',
     icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-      <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
-      <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-      <circle cx="12" cy="15" r="2" fill="currentColor"/>
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+      <path d="M16 3.13a4 4 0 010 7.75"/>
     </svg>`,
   },
   {
-    title: '開始比賽！',
-    desc: '預約成功，按時前往場地，盡情享受匹克球樂趣。',
+    title: '開球！',
+    desc: '人數到齊，按時前往場地，與新球友享受精彩對戰。',
     color: '#84cc16',
     icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
       <circle cx="12" cy="12" r="9"/>

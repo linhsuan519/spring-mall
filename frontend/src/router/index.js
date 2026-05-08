@@ -5,21 +5,22 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', component: () => import('../views/HomeView.vue') },
-    { path: '/courts', component: () => import('../views/CourtsView.vue') },
+    { path: '/activities', component: () => import('../views/ActivitiesView.vue') },
+    { path: '/activities/:id', component: () => import('../views/ActivityDetailView.vue') },
+    {
+      path: '/create-activity',
+      component: () => import('../views/CreateActivityView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/my-activities',
+      component: () => import('../views/MyActivitiesView.vue'),
+      meta: { requiresAuth: true },
+    },
     {
       path: '/login',
       component: () => import('../views/LoginView.vue'),
       meta: { guestOnly: true },
-    },
-    {
-      path: '/my-reservations',
-      component: () => import('../views/MyReservationsView.vue'),
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/admin',
-      component: () => import('../views/AdminView.vue'),
-      meta: { requiresAuth: true },
     },
   ],
   scrollBehavior: () => ({ top: 0, behavior: 'smooth' }),
