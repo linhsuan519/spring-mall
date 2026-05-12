@@ -103,7 +103,7 @@ jobs:
 
       - uses: google-github-actions/setup-gcloud@v2
 
-      # --set-build-env-vars 是 build 階段的環境變數，對應 Dockerfile 裡的 ARG VITE_API_BASE_URL
+      # 透過 cloudbuild.yaml 把 BACKEND_URL 傳給 Dockerfile 的 ARG VITE_API_BASE_URL
       - name: Deploy Frontend
         run: |
           gcloud run deploy spring-mall-frontend \
@@ -111,4 +111,4 @@ jobs:
             --region asia-east1 \
             --platform managed \
             --allow-unauthenticated \
-            --set-build-env-vars VITE_API_BASE_URL=${{ secrets.BACKEND_URL }}
+            --substitutions _VITE_API_BASE_URL=${{ secrets.BACKEND_URL }},_SERVICE_NAME=spring-mall-frontend,_AR_HOSTNAME=asia-east1-docker.pkg.dev
