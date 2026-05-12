@@ -1,7 +1,9 @@
+# MySQL(railway)
 spring.datasource.url=
 spring.datasource.username=
 spring.datasource.password=
 
+# Redis(railway)
 spring.data.redis.host=
 spring.data.redis.port=
 spring.data.redis.password=
