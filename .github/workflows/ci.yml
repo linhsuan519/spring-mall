@@ -5,6 +5,11 @@ on:
   push:
     branches: [dev]
 
+# Workload Identity Federation 需要 id-token 權限才能向 GCP 驗證身份
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   # Job 1：前端檢查
   # 確認程式碼格式符合 Prettier 規範，並確認 Vite 能成功 build
@@ -49,24 +54,61 @@ jobs:
       - name: Spotless check
         run: mvn spotless:check -B
 
-  # Job 3：部署到 Railway
+  # Job 3：部署後端到 Cloud Run
   # 前兩個 job 都通過後才執行，避免帶著錯誤部署
-  deploy:
-    name: Deploy to Railway
+  # 使用 Workload Identity Federation 向 GCP 驗證，不需要下載金鑰檔案
+  deploy-backend:
+    name: Deploy Backend to Cloud Run
     needs: [frontend, backend]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      # 透過 Workload Identity Federation 取得 GCP 存取權限
+      - uses: google-github-actions/auth@v2
         with:
-          node-version: 20
+          workload_identity_provider: projects/1084089646528/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: github-actions@spring-mall.iam.gserviceaccount.com
 
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
+      - uses: google-github-actions/setup-gcloud@v2
 
-      # RAILWAY_TOKEN 需在 GitHub repo Settings > Secrets 中設定
-      - name: Deploy
-        run: railway up --detach
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      # gcloud run deploy --source . 會自動用 Dockerfile build image 並推到 Artifact Registry
+      # 環境變數從 GitHub Secrets 注入，不寫在程式碼裡
+      - name: Deploy Backend
+        run: |
+          gcloud run deploy spring-mall-backend \
+            --source . \
+            --region asia-east1 \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-env-vars "SPRING_DATASOURCE_URL=${{ secrets.DATASOURCE_URL }},SPRING_DATASOURCE_USERNAME=${{ secrets.DATASOURCE_USERNAME }},SPRING_DATASOURCE_PASSWORD=${{ secrets.DATASOURCE_PASSWORD }},SPRING_DATA_REDIS_HOST=${{ secrets.REDIS_HOST }},SPRING_DATA_REDIS_PORT=${{ secrets.REDIS_PORT }},SPRING_DATA_REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}"
+
+  # Job 4：部署前端到 Cloud Run
+  # 前兩個 job 都通過後才執行，與 deploy-backend 並行
+  # VITE_API_BASE_URL 在 build 時注入，讓前端知道後端網址
+  deploy-frontend:
+    name: Deploy Frontend to Cloud Run
+    needs: [frontend, backend]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/1084089646528/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: github-actions@spring-mall.iam.gserviceaccount.com
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      # --set-build-env-vars 是 build 階段的環境變數，對應 Dockerfile 裡的 ARG VITE_API_BASE_URL
+      - name: Deploy Frontend
+        run: |
+          gcloud run deploy spring-mall-frontend \
+            --source . \
+            --region asia-east1 \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-build-env-vars VITE_API_BASE_URL=${{ secrets.BACKEND_URL }}
