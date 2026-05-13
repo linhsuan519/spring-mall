@@ -1,33 +1,59 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { login as loginApi, logout as logoutApi, register as registerApi } from '../api/auth'
+import { login as loginApi, register as registerApi } from '../api/auth'
+import { AUTH_STORAGE_KEY, getStoredAuthUser, isAuthExpired } from '../api/client'
 
-const STORAGE_KEY = 'auth_user'
-
-function readStoredUser() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')
-  } catch {
-    localStorage.removeItem(STORAGE_KEY)
-    return null
-  }
-}
+const MAX_TIMEOUT_DELAY = 2_147_483_647
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref(readStoredUser())
+  const user = ref(getStoredAuthUser())
   const loading = ref(false)
   const error = ref('')
+  let autoLogoutTimer = null
 
-  const isAuthenticated = computed(() => Boolean(user.value?.userId))
+  const isAuthenticated = computed(() => Boolean(user.value?.userId) && !isAuthExpired(user.value))
   const userId = computed(() => user.value?.userId || null)
 
-  function setUser(nextUser) {
-    user.value = nextUser
-    if (nextUser) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextUser))
-    } else {
-      localStorage.removeItem(STORAGE_KEY)
+  function clearAutoLogoutTimer() {
+    if (autoLogoutTimer) {
+      clearTimeout(autoLogoutTimer)
+      autoLogoutTimer = null
     }
+  }
+
+  function scheduleAutoLogout() {
+    clearAutoLogoutTimer()
+
+    if (!user.value?.expiresAt) return
+
+    const delay = new Date(user.value.expiresAt).getTime() - Date.now()
+
+    if (!Number.isFinite(delay) || delay <= 0) {
+      setUser(null)
+      return
+    }
+
+    autoLogoutTimer = setTimeout(
+      () => {
+        setUser(null)
+        error.value = 'Login expired. Please sign in again.'
+      },
+      Math.min(delay, MAX_TIMEOUT_DELAY)
+    )
+  }
+
+  function setUser(nextUser) {
+    const authUser = nextUser && !isAuthExpired(nextUser) ? nextUser : null
+
+    user.value = authUser
+
+    if (authUser) {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser))
+    } else {
+      localStorage.removeItem(AUTH_STORAGE_KEY)
+    }
+
+    scheduleAutoLogout()
   }
 
   async function login(credentials) {
@@ -38,7 +64,7 @@ export const useAuthStore = defineStore('auth', () => {
       setUser(loggedInUser)
       return loggedInUser
     } catch (e) {
-      error.value = e.response?.status === 400 ? 'Email 或密碼不正確。' : '登入失敗，請稍後再試。'
+      error.value = e.response?.status === 400 ? 'Email or password is incorrect.' : 'Login failed.'
       throw e
     } finally {
       loading.value = false
@@ -55,24 +81,24 @@ export const useAuthStore = defineStore('auth', () => {
       return loggedInUser
     } catch (e) {
       error.value =
-        e.response?.status === 400
-          ? '註冊資料無法使用，請確認 Email 或密碼。'
-          : '註冊失敗，請稍後再試。'
+        e.response?.status === 400 ? 'Email is invalid or already in use.' : 'Register failed.'
       throw e
     } finally {
       loading.value = false
     }
   }
 
-  async function logout() {
-    try {
-      await logoutApi()
-    } catch {
-      // The local session still needs to be cleared if the server session is already gone.
-    }
+  function logout() {
     setUser(null)
     error.value = ''
   }
+
+  window.addEventListener('auth-expired', () => {
+    setUser(null)
+    error.value = 'Login expired. Please sign in again.'
+  })
+
+  scheduleAutoLogout()
 
   return { user, userId, loading, error, isAuthenticated, login, register, logout }
 })

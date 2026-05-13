@@ -23,6 +23,11 @@ public class UserServiceImpl implements UserService {
   @Autowired private PasswordEncoder passwordEncoder;
 
   @Override
+  public User getUserByEmail(String email) {
+    return userDao.getUserByEmail(email);
+  }
+
+  @Override
   public Integer register(UserRegisterRequest userRegisterRequest) {
     User user = userDao.getUserByEmail(userRegisterRequest.getEmail());
 

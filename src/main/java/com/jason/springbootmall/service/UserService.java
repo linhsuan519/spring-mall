@@ -6,6 +6,8 @@ import com.jason.springbootmall.model.User;
 
 public interface UserService {
   //
+  User getUserByEmail(String email);
+
   Integer register(UserRegisterRequest userRegisterRequest);
 
   User getUserById(Integer userId);

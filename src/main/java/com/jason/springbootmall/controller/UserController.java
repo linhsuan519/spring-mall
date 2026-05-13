@@ -1,25 +1,20 @@
 package com.jason.springbootmall.controller;
 
 import com.jason.springbootmall.dto.UserLoginRequest;
+import com.jason.springbootmall.dto.UserLoginResponse;
 import com.jason.springbootmall.dto.UserRegisterRequest;
 import com.jason.springbootmall.model.User;
 import com.jason.springbootmall.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.jason.springbootmall.util.JwtUtil;
 import jakarta.validation.Valid;
 import java.util.Collection;
+import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,10 +25,18 @@ public class UserController {
 
   @Autowired private UserService userService;
 
-  @Autowired private UserDetailsService userDetailsService;
+  @GetMapping("/users/me")
+  public ResponseEntity<User> getCurrentUser(Authentication authentication) {
+    String email = authentication.getName();
 
-  private final SecurityContextRepository securityContextRepository =
-      new HttpSessionSecurityContextRepository();
+    User user = userService.getUserByEmail(email);
+
+    if (user == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    } else {
+      return ResponseEntity.status(HttpStatus.OK).body(user);
+    }
+  }
 
   @PostMapping("/users/register")
   public ResponseEntity<User> register(
@@ -46,24 +49,19 @@ public class UserController {
   }
 
   @PostMapping("/users/login")
-  public ResponseEntity<User> login(
-      @RequestBody @Valid UserLoginRequest userLoginRequest,
-      HttpServletRequest request,
-      HttpServletResponse response) {
+  public ResponseEntity<UserLoginResponse> login(
+      @RequestBody @Valid UserLoginRequest userLoginRequest) {
     User user = userService.login(userLoginRequest);
-    UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
 
-    Authentication authentication =
-        UsernamePasswordAuthenticationToken.authenticated(
-            userDetails, null, userDetails.getAuthorities());
-    SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-    securityContext.setAuthentication(authentication);
-    SecurityContextHolder.setContext(securityContext);
-    request.getSession(true);
-    request.changeSessionId();
-    securityContextRepository.saveContext(securityContext, request, response);
+    String token = JwtUtil.generateToken(user.getEmail());
+    Date loginTime = new Date();
+    Date expiresAt = JwtUtil.getExpiration(token);
 
-    return ResponseEntity.status(HttpStatus.OK).body(user);
+    UserLoginResponse userLoginResponse =
+        new UserLoginResponse(
+            user, token, loginTime, expiresAt, JwtUtil.TOKEN_VALIDITY_SECONDS);
+
+    return ResponseEntity.status(HttpStatus.OK).body(userLoginResponse);
   }
 
   @GetMapping("/testuser")

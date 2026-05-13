@@ -8,16 +8,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jason.springbootmall.dao.UserDao;
 import com.jason.springbootmall.dto.UserLoginRequest;
 import com.jason.springbootmall.dto.UserRegisterRequest;
 import com.jason.springbootmall.model.User;
+import com.jason.springbootmall.util.JwtUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
@@ -125,13 +127,17 @@ public class UserControllerTest {
         .andExpect(jsonPath("$.userId", notNullValue()))
         .andExpect(jsonPath("$.email", equalTo(userRegisterRequest.getEmail())))
         .andExpect(jsonPath("$.createdDate", notNullValue()))
-        .andExpect(jsonPath("$.lastModifiedDate", notNullValue()));
+        .andExpect(jsonPath("$.lastModifiedDate", notNullValue()))
+        .andExpect(jsonPath("$.token", notNullValue()))
+        .andExpect(jsonPath("$.loginTime", notNullValue()))
+        .andExpect(jsonPath("$.expiresAt", notNullValue()))
+        .andExpect(jsonPath("$.expiresInSeconds", equalTo((int) JwtUtil.TOKEN_VALIDITY_SECONDS)));
   }
 
   @Test
-  public void login_successCreatesSession() throws Exception {
+  public void login_successDoesNotCreateSession() throws Exception {
     UserRegisterRequest userRegisterRequest = new UserRegisterRequest();
-    userRegisterRequest.setEmail("test-session@gmail.com");
+    userRegisterRequest.setEmail("test-no-session@gmail.com");
     userRegisterRequest.setPassword("123");
 
     register(userRegisterRequest);
@@ -151,11 +157,44 @@ public class UserControllerTest {
             .andExpect(status().isOk())
             .andReturn();
 
-    MockHttpSession session = (MockHttpSession) loginResult.getRequest().getSession(false);
-    assertNotNull(session);
+    assertNull(loginResult.getRequest().getSession(false));
+
+    mockMvc.perform(MockMvcRequestBuilders.get("/testuser")).andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  public void login_successReturnsJwtToken() throws Exception {
+    UserRegisterRequest userRegisterRequest = new UserRegisterRequest();
+    userRegisterRequest.setEmail("test-jwt@gmail.com");
+    userRegisterRequest.setPassword("123");
+
+    register(userRegisterRequest);
+
+    UserLoginRequest userLoginRequest = new UserLoginRequest();
+    userLoginRequest.setEmail(userRegisterRequest.getEmail());
+    userLoginRequest.setPassword(userRegisterRequest.getPassword());
+
+    String json = objectMapper.writeValueAsString(userLoginRequest);
+
+    MvcResult loginResult =
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.post("/users/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(json))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.token", notNullValue()))
+            .andExpect(jsonPath("$.loginTime", notNullValue()))
+            .andExpect(jsonPath("$.expiresAt", notNullValue()))
+            .andReturn();
+
+    JsonNode loginResponse = objectMapper.readTree(loginResult.getResponse().getContentAsString());
+    String token = loginResponse.get("token").asText();
 
     mockMvc
-        .perform(MockMvcRequestBuilders.get("/testuser").session(session))
+        .perform(
+            MockMvcRequestBuilders.get("/testuser")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString(userRegisterRequest.getEmail())));
   }

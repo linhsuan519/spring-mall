@@ -1,6 +1,7 @@
 package com.jason.springbootmall.security;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.springframework.context.annotation.Bean;
@@ -13,19 +14,23 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class MySecurityConfig {
 
-  private static final Set<String> PUBLIC_PATHS = Set.of("/users/register", "/users/login");
+  private static final Set<String> PUBLIC_PATHS =
+      Set.of("/users/register", "/users/login", "/error", "/swagger-ui.html");
   private static final Pattern PRODUCTS_PATH = Pattern.compile("^/products(?:/\\d+)?$");
-  private static final Pattern USER_ORDERS_PATH = Pattern.compile("^/users/\\d+/orders$");
+  private static final Pattern SWAGGER_PATH =
+      Pattern.compile("^/(?:swagger-ui(?:/.*)?|v3/api-docs(?:\\.yaml|/.*)?)$");
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+  public SecurityFilterChain securityFilterChain(
+      HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) {
     http.sessionManagement(
-            session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .cors(Customizer.withDefaults())
         .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(
@@ -34,8 +39,15 @@ public class MySecurityConfig {
                     .permitAll()
                     .anyRequest()
                     .authenticated())
+        .exceptionHandling(
+            exception ->
+                exception.authenticationEntryPoint(
+                    (request, response, authException) ->
+                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")))
         .httpBasic(AbstractHttpConfigurer::disable)
-        .formLogin(AbstractHttpConfigurer::disable);
+        .formLogin(AbstractHttpConfigurer::disable)
+        .logout(AbstractHttpConfigurer::disable)
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
   }
@@ -45,7 +57,7 @@ public class MySecurityConfig {
     return new BCryptPasswordEncoder();
   }
 
-  private static boolean isPublicEndpoint(HttpServletRequest request) {
+  static boolean isPublicEndpoint(HttpServletRequest request) {
     if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
       return true;
     }
@@ -53,8 +65,8 @@ public class MySecurityConfig {
     String path = getPathWithoutContextPath(request);
 
     return PUBLIC_PATHS.contains(path)
-        || isPublicProductRead(request.getMethod(), path)
-        || USER_ORDERS_PATH.matcher(path).matches();
+        || SWAGGER_PATH.matcher(path).matches()
+        || isPublicProductRead(request.getMethod(), path);
   }
 
   private static boolean isPublicProductRead(String method, String path) {

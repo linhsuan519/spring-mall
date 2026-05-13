@@ -8,12 +8,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jason.springbootmall.dto.BuyItem;
 import com.jason.springbootmall.dto.CreateOrderRequest;
+import com.jason.springbootmall.util.JwtUtil;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
@@ -23,6 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @AutoConfigureMockMvc
 public class OrderControllerTest {
+
+  private static final String AUTHORIZATION = "Bearer " + JwtUtil.generateToken("user1@gmail.com");
 
   @Autowired private MockMvc mockMvc;
 
@@ -51,6 +55,7 @@ public class OrderControllerTest {
 
     RequestBuilder requestBuilder =
         MockMvcRequestBuilders.post("/users/{userId}/orders", 1)
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION)
             .contentType(MediaType.APPLICATION_JSON)
             .content(json);
 
@@ -76,6 +81,7 @@ public class OrderControllerTest {
 
     RequestBuilder requestBuilder =
         MockMvcRequestBuilders.post("/users/{userId}/orders", 1)
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION)
             .contentType(MediaType.APPLICATION_JSON)
             .content(json);
 
@@ -99,6 +105,7 @@ public class OrderControllerTest {
 
     RequestBuilder requestBuilder =
         MockMvcRequestBuilders.post("/users/{userId}/orders", 100)
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION)
             .contentType(MediaType.APPLICATION_JSON)
             .content(json);
 
@@ -122,6 +129,7 @@ public class OrderControllerTest {
 
     RequestBuilder requestBuilder =
         MockMvcRequestBuilders.post("/users/{userId}/orders", 1)
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION)
             .contentType(MediaType.APPLICATION_JSON)
             .content(json);
 
@@ -145,6 +153,7 @@ public class OrderControllerTest {
 
     RequestBuilder requestBuilder =
         MockMvcRequestBuilders.post("/users/{userId}/orders", 1)
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION)
             .contentType(MediaType.APPLICATION_JSON)
             .content(json);
 
@@ -154,7 +163,9 @@ public class OrderControllerTest {
   // 查詢訂單列表
   @Test
   public void getOrders() throws Exception {
-    RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/users/{userId}/orders", 1);
+    RequestBuilder requestBuilder =
+        MockMvcRequestBuilders.get("/users/{userId}/orders", 1)
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION);
 
     mockMvc
         .perform(requestBuilder)
@@ -178,9 +189,17 @@ public class OrderControllerTest {
   }
 
   @Test
+  public void getOrders_withoutJwtToken() throws Exception {
+    RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/users/{userId}/orders", 1);
+
+    mockMvc.perform(requestBuilder).andExpect(status().isUnauthorized());
+  }
+
+  @Test
   public void getOrders_pagination() throws Exception {
     RequestBuilder requestBuilder =
         MockMvcRequestBuilders.get("/users/{userId}/orders", 1)
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION)
             .param("limit", "2")
             .param("offset", "2");
 
@@ -195,7 +214,9 @@ public class OrderControllerTest {
 
   @Test
   public void getOrders_userHasNoOrder() throws Exception {
-    RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/users/{userId}/orders", 2);
+    RequestBuilder requestBuilder =
+        MockMvcRequestBuilders.get("/users/{userId}/orders", 2)
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION);
 
     mockMvc
         .perform(requestBuilder)
@@ -208,7 +229,9 @@ public class OrderControllerTest {
 
   @Test
   public void getOrders_userNotExist() throws Exception {
-    RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/users/{userId}/orders", 100);
+    RequestBuilder requestBuilder =
+        MockMvcRequestBuilders.get("/users/{userId}/orders", 100)
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION);
 
     mockMvc
         .perform(requestBuilder)

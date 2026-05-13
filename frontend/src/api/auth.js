@@ -1,17 +1,9 @@
-import axios from 'axios'
+import { createApi } from './client'
 
-const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_BASE_URL || ''}/api/users`,
-  timeout: 10000,
-  withCredentials: true,
-})
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ''
 
-export const login = (data) => api.post('/login', data).then((r) => r.data)
+const userApi = createApi(`${apiBaseUrl}/api/users`)
 
-export const register = (data) => api.post('/register', data).then((r) => r.data)
+export const login = (data) => userApi.post('/login', data).then((r) => r.data)
 
-export const logout = () =>
-  axios.post(`${import.meta.env.VITE_API_BASE_URL || ''}/api/logout`, null, {
-    timeout: 10000,
-    withCredentials: true,
-  })
+export const register = (data) => userApi.post('/register', data).then((r) => r.data)
