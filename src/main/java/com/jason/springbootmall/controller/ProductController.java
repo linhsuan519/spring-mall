@@ -1,6 +1,8 @@
 package com.jason.springbootmall.controller;
 
 import com.jason.springbootmall.constant.ProductCategory;
+import com.jason.springbootmall.constant.ProductSortField;
+import com.jason.springbootmall.constant.SortDirection;
 import com.jason.springbootmall.dto.ProductQueryParams;
 import com.jason.springbootmall.dto.ProductRequest;
 import com.jason.springbootmall.model.Product;
@@ -14,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @Valid
 @RestController
@@ -27,16 +30,19 @@ public class ProductController {
       @RequestParam(required = false) ProductCategory category,
       @RequestParam(required = false) String search,
       // Sorting
-      @RequestParam(defaultValue = "created_date") String orderBy,
+      @RequestParam(defaultValue = "createdDate") String orderBy,
       @RequestParam(defaultValue = "desc") String sort,
       // Pagination
       @RequestParam(defaultValue = "5") @Max(1000) @Min(0) Integer limit,
       @RequestParam(defaultValue = "0") @Min(0) Integer offset) {
+    ProductSortField sortField = parseSortField(orderBy);
+    SortDirection sortDirection = parseSortDirection(sort);
+
     ProductQueryParams productQueryParams = new ProductQueryParams();
     productQueryParams.setSearch(search);
     productQueryParams.setCategory(category);
-    productQueryParams.setOrderBy(orderBy);
-    productQueryParams.setSort(sort);
+    productQueryParams.setOrderBy(sortField);
+    productQueryParams.setSort(sortDirection);
     productQueryParams.setLimit(limit);
     productQueryParams.setOffset(offset);
     // 取得 product list
@@ -106,5 +112,17 @@ public class ProductController {
   @GetMapping("/test")
   public String test() {
     return "vercel!";
+  }
+
+  private ProductSortField parseSortField(String orderBy) {
+    return ProductSortField.from(orderBy)
+        .orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid orderBy parameter"));
+  }
+
+  private SortDirection parseSortDirection(String sort) {
+    return SortDirection.from(sort)
+        .orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid sort parameter"));
   }
 }

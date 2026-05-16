@@ -1,13 +1,15 @@
 package com.jason.springbootmall.dto;
 
 import com.jason.springbootmall.constant.ProductCategory;
+import com.jason.springbootmall.constant.ProductSortField;
+import com.jason.springbootmall.constant.SortDirection;
 
 public class ProductQueryParams {
 
   private ProductCategory category;
   private String search;
-  private String orderBy;
-  private String sort;
+  private ProductSortField orderBy;
+  private SortDirection sort;
   private Integer limit;
   private Integer offset;
 
@@ -27,19 +29,19 @@ public class ProductQueryParams {
     this.search = search;
   }
 
-  public String getOrderBy() {
+  public ProductSortField getOrderBy() {
     return orderBy;
   }
 
-  public void setOrderBy(String orderBy) {
+  public void setOrderBy(ProductSortField orderBy) {
     this.orderBy = orderBy;
   }
 
-  public String getSort() {
+  public SortDirection getSort() {
     return sort;
   }
 
-  public void setSort(String sort) {
+  public void setSort(SortDirection sort) {
     this.sort = sort;
   }
 

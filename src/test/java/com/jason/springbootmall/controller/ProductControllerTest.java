@@ -233,6 +233,30 @@ public class ProductControllerTest {
   }
 
   @Test
+  public void getProducts_invalidOrderBy_shouldReturnBadRequest() throws Exception {
+    RequestBuilder requestBuilder =
+        MockMvcRequestBuilders.get("/products").param("orderBy", "price desc");
+
+    mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void getProducts_snakeCaseOrderBy_shouldReturnBadRequest() throws Exception {
+    RequestBuilder requestBuilder =
+        MockMvcRequestBuilders.get("/products").param("orderBy", "created_date");
+
+    mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void getProducts_invalidSort_shouldReturnBadRequest() throws Exception {
+    RequestBuilder requestBuilder =
+        MockMvcRequestBuilders.get("/products").param("sort", "sideways");
+
+    mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
+  }
+
+  @Test
   public void getProducts_pagination() throws Exception {
     RequestBuilder requestBuilder =
         MockMvcRequestBuilders.get("/products").param("limit", "2").param("offset", "2");

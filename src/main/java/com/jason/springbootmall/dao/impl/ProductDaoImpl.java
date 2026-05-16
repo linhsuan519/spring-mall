@@ -40,7 +40,12 @@ public class ProductDaoImpl implements ProductDao {
     // 查詢條件
     sql = addFilteringSql(sql, map, productQueryParams);
     // 排序
-    sql = sql + " ORDER BY " + productQueryParams.getOrderBy() + " " + productQueryParams.getSort();
+    sql =
+        sql
+            + " ORDER BY "
+            + productQueryParams.getOrderBy().toColumnName()
+            + " "
+            + productQueryParams.getSort().getSqlKeyword();
     // 分頁
     sql = sql + " LIMIT :limit OFFSET :offset";
     map.put("limit", productQueryParams.getLimit());

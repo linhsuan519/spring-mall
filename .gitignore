@@ -47,3 +47,7 @@ frontend/vite-dev*.log
 .postman/
 postman/
 hs_err_pid*.log
+
+### Practice ###
+java-practice/
+src/test/java/com/jason/springbootmall/practice/
