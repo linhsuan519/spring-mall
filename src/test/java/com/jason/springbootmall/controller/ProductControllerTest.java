@@ -257,6 +257,27 @@ public class ProductControllerTest {
   }
 
   @Test
+  public void getProducts_zeroLimit_shouldReturnBadRequest() throws Exception {
+    RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/products").param("limit", "0");
+
+    mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void getProducts_negativeLimit_shouldReturnBadRequest() throws Exception {
+    RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/products").param("limit", "-1");
+
+    mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void getProducts_negativeOffset_shouldReturnBadRequest() throws Exception {
+    RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/products").param("offset", "-1");
+
+    mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
+  }
+
+  @Test
   public void getProducts_pagination() throws Exception {
     RequestBuilder requestBuilder =
         MockMvcRequestBuilders.get("/products").param("limit", "2").param("offset", "2");

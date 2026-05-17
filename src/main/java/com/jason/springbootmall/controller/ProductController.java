@@ -33,7 +33,7 @@ public class ProductController {
       @RequestParam(defaultValue = "createdDate") String orderBy,
       @RequestParam(defaultValue = "desc") String sort,
       // Pagination
-      @RequestParam(defaultValue = "5") @Max(1000) @Min(0) Integer limit,
+      @RequestParam(defaultValue = "5") @Max(1000) @Min(1) Integer limit,
       @RequestParam(defaultValue = "0") @Min(0) Integer offset) {
     ProductSortField sortField = parseSortField(orderBy);
     SortDirection sortDirection = parseSortDirection(sort);

@@ -50,11 +50,10 @@ public class OrderServiceImpl implements OrderService {
   @Transactional
   @Override
   public Integer createOrder(Integer userId, CreateOrderRequest createOrderRequest) {
-    // 檢查 user 是否存在
     User user = userDao.getUserById(userId);
 
     if (user == null) {
-      log.warn("該 userId {} 不存在", userId);
+      log.warn("User does not exist, userId={}", userId);
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
     }
 
@@ -63,26 +62,33 @@ public class OrderServiceImpl implements OrderService {
 
     for (BuyItem buyItem : createOrderRequest.getBuyItemList()) {
       Product product = productDao.getProductById(buyItem.getProductId());
-      // 檢查 product 是否存在、庫存是否足夠
+
       if (product == null) {
-        log.warn("商品 {} 不存在", buyItem.getProductId());
+        log.warn("Product does not exist, productId={}", buyItem.getProductId());
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
       } else if (product.getStock() < buyItem.getQuantity()) {
         log.warn(
-            "商品 {} 庫存數量不足，無法購買。剩餘庫存 {}，欲購買數量 {}",
+            "Product stock is not enough, productId={}, stock={}, requestedQuantity={}",
             buyItem.getProductId(),
             product.getStock(),
             buyItem.getQuantity());
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
       }
-      // 扣除商品庫存
-      productDao.updateStock(product.getProductId(), product.getStock() - buyItem.getQuantity());
 
-      // 計算總價錢
+      boolean stockUpdated =
+          productDao.decreaseStock(product.getProductId(), buyItem.getQuantity());
+
+      if (!stockUpdated) {
+        log.warn(
+            "Product stock changed before update, productId={}, requestedQuantity={}",
+            buyItem.getProductId(),
+            buyItem.getQuantity());
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+      }
+
       int amount = buyItem.getQuantity() * product.getPrice();
       totalAmount = totalAmount + amount;
 
-      // 轉換 BuyItem to OrderItem
       OrderItem orderItem = new OrderItem();
       orderItem.setProductId(buyItem.getProductId());
       orderItem.setQuantity(buyItem.getQuantity());
@@ -91,10 +97,8 @@ public class OrderServiceImpl implements OrderService {
       orderItemList.add(orderItem);
     }
 
-    // 創建訂單
     Integer orderId = orderDao.createOrder(userId, totalAmount);
 
-    // 建立訂單明細
     orderDao.createOrderItem(orderId, orderItemList);
 
     return orderId;
@@ -103,6 +107,10 @@ public class OrderServiceImpl implements OrderService {
   @Override
   public Order getOrderById(Integer orderId) {
     Order order = orderDao.getOrderById(orderId);
+
+    if (order == null) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+    }
 
     List<OrderItem> orderItemList = orderDao.getOrderItemsByOrderId(orderId);
 

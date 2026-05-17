@@ -1,10 +1,14 @@
 package com.jason.springbootmall.dto;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 public class BuyItem {
   @NotNull private Integer productId;
-  @NotNull private Integer quantity;
+
+  @NotNull
+  @Min(1)
+  private Integer quantity;
 
   public @NotNull Integer getProductId() {
     return productId;
@@ -18,7 +22,7 @@ public class BuyItem {
     return quantity;
   }
 
-  public void setQuantity(@NotNull Integer quantity) {
+  public void setQuantity(@NotNull @Min(1) Integer quantity) {
     this.quantity = quantity;
   }
 }

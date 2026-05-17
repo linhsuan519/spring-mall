@@ -19,5 +19,7 @@ public interface ProductDao {
 
   void updateStock(Integer productId, Integer stock);
 
+  boolean decreaseStock(Integer productId, Integer quantity);
+
   void deleteProductById(Integer productId);
 }

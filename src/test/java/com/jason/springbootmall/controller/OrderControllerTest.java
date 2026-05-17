@@ -1,7 +1,8 @@
 package com.jason.springbootmall.controller;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -26,13 +27,15 @@ import org.springframework.transaction.annotation.Transactional;
 @AutoConfigureMockMvc
 public class OrderControllerTest {
 
-  private static final String AUTHORIZATION = "Bearer " + JwtUtil.generateToken("user1@gmail.com");
+  private static final String AUTHORIZATION_USER_1 =
+      "Bearer " + JwtUtil.generateToken("user1@gmail.com");
+  private static final String AUTHORIZATION_USER_2 =
+      "Bearer " + JwtUtil.generateToken("user2@gmail.com");
 
   @Autowired private MockMvc mockMvc;
 
-  private ObjectMapper objectMapper = new ObjectMapper();
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
-  // 創建訂單
   @Transactional
   @Test
   public void createOrder_success() throws Exception {
@@ -55,13 +58,13 @@ public class OrderControllerTest {
 
     RequestBuilder requestBuilder =
         MockMvcRequestBuilders.post("/users/{userId}/orders", 1)
-            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION)
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION_USER_1)
             .contentType(MediaType.APPLICATION_JSON)
             .content(json);
 
     mockMvc
         .perform(requestBuilder)
-        .andExpect(status().is(201))
+        .andExpect(status().isCreated())
         .andExpect(jsonPath("$.orderId", notNullValue()))
         .andExpect(jsonPath("$.userId", equalTo(1)))
         .andExpect(jsonPath("$.totalAmount", equalTo(750)))
@@ -74,42 +77,65 @@ public class OrderControllerTest {
   @Test
   public void createOrder_illegalArgument_emptyBuyItemList() throws Exception {
     CreateOrderRequest createOrderRequest = new CreateOrderRequest();
+    createOrderRequest.setBuyItemList(new ArrayList<>());
+
+    String json = objectMapper.writeValueAsString(createOrderRequest);
+
+    RequestBuilder requestBuilder =
+        MockMvcRequestBuilders.post("/users/{userId}/orders", 1)
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION_USER_1)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(json);
+
+    mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
+  }
+
+  @Transactional
+  @Test
+  public void createOrder_illegalArgument_zeroQuantity() throws Exception {
+    CreateOrderRequest createOrderRequest = new CreateOrderRequest();
     List<BuyItem> buyItemList = new ArrayList<>();
+
+    BuyItem buyItem = new BuyItem();
+    buyItem.setProductId(1);
+    buyItem.setQuantity(0);
+    buyItemList.add(buyItem);
+
     createOrderRequest.setBuyItemList(buyItemList);
 
     String json = objectMapper.writeValueAsString(createOrderRequest);
 
     RequestBuilder requestBuilder =
         MockMvcRequestBuilders.post("/users/{userId}/orders", 1)
-            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION)
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION_USER_1)
             .contentType(MediaType.APPLICATION_JSON)
             .content(json);
 
-    mockMvc.perform(requestBuilder).andExpect(status().is(400));
+    mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
   }
 
   @Transactional
   @Test
-  public void createOrder_userNotExist() throws Exception {
+  public void createOrder_forbidden_whenPathUserDoesNotMatchToken() throws Exception {
     CreateOrderRequest createOrderRequest = new CreateOrderRequest();
     List<BuyItem> buyItemList = new ArrayList<>();
 
-    BuyItem buyItem1 = new BuyItem();
-    buyItem1.setProductId(1);
-    buyItem1.setQuantity(1);
-    buyItemList.add(buyItem1);
+    BuyItem buyItem = new BuyItem();
+    buyItem.setProductId(1);
+    buyItem.setQuantity(1);
+    buyItemList.add(buyItem);
 
     createOrderRequest.setBuyItemList(buyItemList);
 
     String json = objectMapper.writeValueAsString(createOrderRequest);
 
     RequestBuilder requestBuilder =
-        MockMvcRequestBuilders.post("/users/{userId}/orders", 100)
-            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION)
+        MockMvcRequestBuilders.post("/users/{userId}/orders", 2)
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION_USER_1)
             .contentType(MediaType.APPLICATION_JSON)
             .content(json);
 
-    mockMvc.perform(requestBuilder).andExpect(status().is(400));
+    mockMvc.perform(requestBuilder).andExpect(status().isForbidden());
   }
 
   @Transactional
@@ -118,10 +144,10 @@ public class OrderControllerTest {
     CreateOrderRequest createOrderRequest = new CreateOrderRequest();
     List<BuyItem> buyItemList = new ArrayList<>();
 
-    BuyItem buyItem1 = new BuyItem();
-    buyItem1.setProductId(100);
-    buyItem1.setQuantity(1);
-    buyItemList.add(buyItem1);
+    BuyItem buyItem = new BuyItem();
+    buyItem.setProductId(100);
+    buyItem.setQuantity(1);
+    buyItemList.add(buyItem);
 
     createOrderRequest.setBuyItemList(buyItemList);
 
@@ -129,11 +155,11 @@ public class OrderControllerTest {
 
     RequestBuilder requestBuilder =
         MockMvcRequestBuilders.post("/users/{userId}/orders", 1)
-            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION)
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION_USER_1)
             .contentType(MediaType.APPLICATION_JSON)
             .content(json);
 
-    mockMvc.perform(requestBuilder).andExpect(status().is(400));
+    mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
   }
 
   @Transactional
@@ -142,10 +168,10 @@ public class OrderControllerTest {
     CreateOrderRequest createOrderRequest = new CreateOrderRequest();
     List<BuyItem> buyItemList = new ArrayList<>();
 
-    BuyItem buyItem1 = new BuyItem();
-    buyItem1.setProductId(1);
-    buyItem1.setQuantity(10000);
-    buyItemList.add(buyItem1);
+    BuyItem buyItem = new BuyItem();
+    buyItem.setProductId(1);
+    buyItem.setQuantity(10000);
+    buyItemList.add(buyItem);
 
     createOrderRequest.setBuyItemList(buyItemList);
 
@@ -153,19 +179,18 @@ public class OrderControllerTest {
 
     RequestBuilder requestBuilder =
         MockMvcRequestBuilders.post("/users/{userId}/orders", 1)
-            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION)
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION_USER_1)
             .contentType(MediaType.APPLICATION_JSON)
             .content(json);
 
-    mockMvc.perform(requestBuilder).andExpect(status().is(400));
+    mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
   }
 
-  // 查詢訂單列表
   @Test
   public void getOrders() throws Exception {
     RequestBuilder requestBuilder =
         MockMvcRequestBuilders.get("/users/{userId}/orders", 1)
-            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION);
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION_USER_1);
 
     mockMvc
         .perform(requestBuilder)
@@ -199,7 +224,7 @@ public class OrderControllerTest {
   public void getOrders_pagination() throws Exception {
     RequestBuilder requestBuilder =
         MockMvcRequestBuilders.get("/users/{userId}/orders", 1)
-            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION)
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION_USER_1)
             .param("limit", "2")
             .param("offset", "2");
 
@@ -216,7 +241,7 @@ public class OrderControllerTest {
   public void getOrders_userHasNoOrder() throws Exception {
     RequestBuilder requestBuilder =
         MockMvcRequestBuilders.get("/users/{userId}/orders", 2)
-            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION);
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION_USER_2);
 
     mockMvc
         .perform(requestBuilder)
@@ -228,17 +253,11 @@ public class OrderControllerTest {
   }
 
   @Test
-  public void getOrders_userNotExist() throws Exception {
+  public void getOrders_forbidden_whenPathUserDoesNotMatchToken() throws Exception {
     RequestBuilder requestBuilder =
-        MockMvcRequestBuilders.get("/users/{userId}/orders", 100)
-            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION);
+        MockMvcRequestBuilders.get("/users/{userId}/orders", 2)
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION_USER_1);
 
-    mockMvc
-        .perform(requestBuilder)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.limit", notNullValue()))
-        .andExpect(jsonPath("$.offset", notNullValue()))
-        .andExpect(jsonPath("$.total", notNullValue()))
-        .andExpect(jsonPath("$.results", hasSize(0)));
+    mockMvc.perform(requestBuilder).andExpect(status().isForbidden());
   }
 }
